@@ -1,0 +1,32 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.6.RELEASE'
+    id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'pl.eitowcy'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '8'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //rest_api
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.0'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'com.h2database:h2'
+    /*---------*/
+}
