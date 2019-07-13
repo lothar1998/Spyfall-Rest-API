@@ -4,6 +4,8 @@ import backend.endpoints.responses.Response;
 
 /**
  * implementation of response for query of login operation
+ *
+ * @author Piotr Kuglin
  */
 public class LoginResponse extends Response {
 

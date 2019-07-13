@@ -3,6 +3,8 @@ package backend.endpoints.responses;
 
 /**
  * abstract class implementing response for query
+ *
+ * @author Piotr Kuglin
  */
 public abstract class Response {
 

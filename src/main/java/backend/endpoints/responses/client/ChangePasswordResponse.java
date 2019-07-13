@@ -4,6 +4,8 @@ import backend.endpoints.responses.Response;
 
 /**
  * implementation of response for query of changing password operation
+ *
+ * @author Piotr Kuglin
  */
 public class ChangePasswordResponse extends Response {
 

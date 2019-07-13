@@ -4,6 +4,8 @@ import backend.endpoints.responses.Response;
 
 /**
  * implementation of response for query of creating new client (user) operation
+ *
+ * @author Piotr Kuglin
  */
 public class CreateClientResponse extends Response {
 

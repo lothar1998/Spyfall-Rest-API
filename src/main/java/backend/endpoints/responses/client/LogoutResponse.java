@@ -4,6 +4,8 @@ import backend.endpoints.responses.Response;
 
 /**
  * implementation of response for logout query
+ *
+ * @author Piotr Kuglin
  */
 public class LogoutResponse extends Response {
 
