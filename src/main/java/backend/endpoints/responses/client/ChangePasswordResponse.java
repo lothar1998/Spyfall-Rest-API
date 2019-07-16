@@ -2,6 +2,8 @@ package backend.endpoints.responses.client;
 
 import backend.endpoints.responses.Response;
 
+import java.util.Map;
+
 /**
  * implementation of response for query of changing password operation
  *
@@ -9,20 +11,21 @@ import backend.endpoints.responses.Response;
  */
 public class ChangePasswordResponse extends Response {
 
-    {
-        response_type = "change_password";
-    }
+    private final static String localResponseType = "change_password";
 
     /**
      * create response for "change password" query
      */
-    public ChangePasswordResponse() {}
+    public ChangePasswordResponse() {
+        super(localResponseType, null, null);
+    }
 
     /**
-     * create response for "change password" query with status
+     * create response for "change password" query with status and content
      * @param status shows whether changing password was properly
+     * @param content defines content of response
      */
-    public ChangePasswordResponse(Status status) {
-        this.status = status;
+    public ChangePasswordResponse(Status status, Map<String, Object> content) {
+        super(localResponseType, status, content);
     }
 }

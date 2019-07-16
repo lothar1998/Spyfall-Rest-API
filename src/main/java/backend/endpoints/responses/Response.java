@@ -1,5 +1,6 @@
 package backend.endpoints.responses;
 
+import java.util.Map;
 
 /**
  * abstract class implementing response for query
@@ -15,13 +16,15 @@ public abstract class Response {
         ok, error
     }
 
-    protected String response_type;
+    private final String response_type;
     protected Status status;
+    protected Map<String,Object> content;
 
     /**
      * construct response object
      */
     public Response() {
+        response_type = null;
     }
 
     /**
@@ -29,9 +32,10 @@ public abstract class Response {
      * @param response_type type of response
      * @param status response whether query was successful
      */
-    public Response(String response_type, Status status) {
+    public Response(String response_type, Status status, Map<String, Object> content) {
         this.response_type = response_type;
         this.status = status;
+        this.content = content;
     }
 
     /**
@@ -40,14 +44,6 @@ public abstract class Response {
      */
     public String getResponse_type() {
         return response_type;
-    }
-
-    /**
-     * set type of response
-     * @param response_type type of response
-     */
-    public void setResponse_type(String response_type) {
-        this.response_type = response_type;
     }
 
     /**
@@ -64,5 +60,21 @@ public abstract class Response {
      */
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    /**
+     * get content of response
+     * @return content
+     */
+    public Map<String, Object> getContent() {
+        return content;
+    }
+
+    /**
+     * set content of response
+     * @param content specific content of response
+     */
+    public void setContent(Map<String, Object> content) {
+        this.content = content;
     }
 }

@@ -1,7 +1,7 @@
 package backend.endpoints;
 
 import backend.endpoints.responses.location.CreateLocationResponse;
-import backend.endpoints.responses.location.EditLocatonResponse;
+import backend.endpoints.responses.location.EditLocationResponse;
 import backend.endpoints.responses.location.ExistingLocationResponse;
 import backend.endpoints.responses.location.UniqueCodeResponse;
 import org.springframework.hateoas.Resource;
@@ -23,7 +23,7 @@ public class LocationController {
 
     @PutMapping("/edit")
     public ResponseEntity<?> editLocation(/*TODO ID of Location, new instance of location */){
-        EditLocatonResponse response = new EditLocatonResponse();
+        EditLocationResponse response = new EditLocationResponse();
 
         //TODO if ID is correct edit location, return ACCEPTED, else BAD REQUEST
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Resource<>(response));

@@ -5,27 +5,27 @@ import backend.endpoints.responses.Response;
 import java.util.Map;
 
 /**
- * implementation of response for unique code query
+ * implementation of response for edit location query
  *
  * @author Piotr Kuglin
  */
-public class UniqueCodeResponse extends Response {
+public class EditLocationResponse extends Response {
 
-    private final static String localResponseType = "unique_code";
+    private final static String localResponseType = "edit_location";
 
     /**
-     * create unique code response
+     * create response for edit location query
      */
-    public UniqueCodeResponse() {
+    public EditLocationResponse() {
         super(localResponseType,null,null);
     }
 
     /**
-     * construct unique code response object with given status and content
+     * construct edit location object with given status and content
      * @param status shows whether changing password was properly
      * @param content defines content of response
      */
-    public UniqueCodeResponse(Status status, Map<String, Object> content) {
+    public EditLocationResponse(Status status, Map<String, Object> content) {
         super(localResponseType, status, content);
     }
 }

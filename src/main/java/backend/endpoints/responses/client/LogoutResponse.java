@@ -2,6 +2,8 @@ package backend.endpoints.responses.client;
 
 import backend.endpoints.responses.Response;
 
+import java.util.Map;
+
 /**
  * implementation of response for logout query
  *
@@ -9,20 +11,21 @@ import backend.endpoints.responses.Response;
  */
 public class LogoutResponse extends Response {
 
-    {
-        response_type = "logout";
-    }
+    private final static String localResponseType = "logout";
 
     /**
      * create logout response
      */
-    public LogoutResponse() {}
+    public LogoutResponse() {
+        super(localResponseType,null,null);
+    }
 
     /**
      * create logout response with given status
      * @param status shows whether changing password was properly
+     * @param content defines content of response
      */
-    public LogoutResponse(Status status) {
-        this.status = status;
+    public LogoutResponse(Status status, Map<String, Object> content) {
+        super(localResponseType,status,content);
     }
 }

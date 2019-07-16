@@ -2,6 +2,8 @@ package backend.endpoints.responses.client;
 
 import backend.endpoints.responses.Response;
 
+import java.util.Map;
+
 /**
  * implementation of response for query of login operation
  *
@@ -9,20 +11,21 @@ import backend.endpoints.responses.Response;
  */
 public class LoginResponse extends Response {
 
-    {
-        response_type = "login_response";
-    }
+    private final static String localResponseType = "login_response";
 
     /**
      * create login response object
      */
-    public LoginResponse() {}
+    public LoginResponse() {
+        super(localResponseType,null,null);
+    }
 
     /**
      * create login response object with given status
      * @param status shows whether changing password was properly
+     * @param content defines content of response
      */
-    public LoginResponse(Status status) {
-        this.status = status;
+    public LoginResponse(Status status, Map<String, Object> content) {
+        super(localResponseType,status,content);
     }
 }
