@@ -1,4 +1,4 @@
-package backend.endpoints.responses.client;
+package backend.endpoints.responses.user;
 
 import backend.endpoints.responses.Response;
 

@@ -1,31 +1,31 @@
-package backend.endpoints.responses.client;
+package backend.endpoints.responses.user;
 
 import backend.endpoints.responses.Response;
 
 import java.util.Map;
 
 /**
- * implementation of response for query of creating new client (user) operation
+ * implementation of response for query of creating new user (user) operation
  *
  * @author Piotr Kuglin
  */
-public class CreateClientResponse extends Response {
+public class CreateUserResponse extends Response {
 
     private final static String localResponseType = "create_client";
 
     /**
-     * create response for create client query
+     * create response for create user query
      */
-    public CreateClientResponse() {
+    public CreateUserResponse() {
         super(localResponseType,null,null);
     }
 
     /**
-     * create response for create client query with given status
+     * create response for create user query with given status
      * @param status shows whether changing password was properly
      * @param content defines content of response
      */
-    public CreateClientResponse(Status status, Map<String, Object> content) {
+    public CreateUserResponse(Status status, Map<String, Object> content) {
         super(localResponseType,status,content);
     }
 

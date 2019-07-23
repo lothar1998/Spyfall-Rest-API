@@ -1,6 +1,7 @@
 package backend.endpoints.responses.game;
 
 import backend.endpoints.responses.Response;
+
 import java.util.Map;
 
 /**

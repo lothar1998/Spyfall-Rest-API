@@ -58,8 +58,9 @@ public abstract class Response {
      * set status of response
      * @param status response whether query was successful
      */
-    public void setStatus(Status status) {
+    public Response setStatus(Status status) {
         this.status = status;
+        return this;
     }
 
     /**
@@ -74,7 +75,8 @@ public abstract class Response {
      * set content of response
      * @param content specific content of response
      */
-    public void setContent(Map<String, Object> content) {
+    public Response setContent(Map<String, Object> content) {
         this.content = content;
+        return this;
     }
 }

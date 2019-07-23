@@ -1,19 +1,17 @@
-package backend.endpoints;
+package backend.endpoints.controllers;
 
+import backend.endpoints.ContextPaths;
 import backend.endpoints.responses.game.*;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/game")
 public class GameController {
 
-    @PostMapping("/start")
+    @PostMapping(ContextPaths.GAME_START)
     ResponseEntity<?> startGame(/*TODO id of game*/){
         StartGameResponse response = new StartGameResponse();
 
@@ -21,7 +19,7 @@ public class GameController {
         return ResponseEntity.ok().body(new Resource<>(response));
     }
 
-    @PostMapping("/stop")
+    @PostMapping(ContextPaths.GAME_STOP)
     ResponseEntity<?> stopGame(/*TODO id of game*/){
         StopGameResponse response = new StopGameResponse();
 
@@ -29,7 +27,7 @@ public class GameController {
         return ResponseEntity.ok().body(new Resource<>(response));
     }
 
-    @PostMapping("/next")
+    @PostMapping(ContextPaths.GAME_NEXT_PLAYER)
     ResponseEntity<?> nextPlayer(/*TODO id of game*/){
         NextPlayerResponse response = new NextPlayerResponse();
 
@@ -37,7 +35,7 @@ public class GameController {
         return ResponseEntity.ok().body(new Resource<>(response));
     }
 
-    @GetMapping("/summary")
+    @GetMapping(ContextPaths.GAME_SUMMARY)
     ResponseEntity<?> getSummary(/*TODO id of game*/){
         SummaryResponse response = new SummaryResponse();
 
@@ -45,7 +43,7 @@ public class GameController {
         return ResponseEntity.ok().body(new Resource<>(response));
     }
 
-    @GetMapping("/synchronize")
+    @GetMapping(ContextPaths.GAME_SYNCHRONIZE)
     ResponseEntity<?> synchronizeGame(/*TODO id of game*/){
         SynchronizeResponse response = new SynchronizeResponse();
 
