@@ -22,7 +22,7 @@ public class NextPlayerResponse extends Response {
 
     /**
      * construct next player response with given status and content
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public NextPlayerResponse(Status status, Map<String, Object> content) {

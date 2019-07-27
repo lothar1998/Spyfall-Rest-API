@@ -22,7 +22,7 @@ public class LoginResponse extends Response {
 
     /**
      * create login response object with given status
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public LoginResponse(Status status, Map<String, Object> content) {

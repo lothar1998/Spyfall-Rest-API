@@ -22,7 +22,7 @@ public class SynchronizeResponse extends Response {
 
     /**
      * create response for synchronize query with status and content
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public SynchronizeResponse(Status status, Map<String, Object> content) {

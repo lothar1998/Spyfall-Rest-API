@@ -1,5 +1,7 @@
 package backend.databases.entities;
 
+import backend.StartupConfig;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -12,10 +14,10 @@ public class UserEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username") @NotNull @Size(min = 6)
+    @Column(name = "username") @NotNull @Size(min = StartupConfig.usernameMinLength)
     private String username;
 
-    @Column(name = "password") @NotNull @Size(min = 8)
+    @Column(name = "password") @NotNull @Size(min = StartupConfig.usernameMinLength)
     private String password;
 
     @Column(name = "email") @NotNull
@@ -37,40 +39,45 @@ public class UserEntity {
         return id;
     }
 
-    public void setId(Long id) {
+    public UserEntity setId(Long id) {
         this.id = id;
+        return this;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
+    public UserEntity setUsername(String username) {
         this.username = username;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public UserEntity setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public UserEntity setEmail(String email) {
         this.email = email;
+        return this;
     }
 
     public String getAuthority() {
         return authority;
     }
 
-    public void setAuthority(String authority) {
+    public UserEntity setAuthority(String authority) {
         this.authority = authority;
+        return this;
     }
 
     @Override

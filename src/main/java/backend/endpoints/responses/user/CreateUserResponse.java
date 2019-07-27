@@ -22,7 +22,7 @@ public class CreateUserResponse extends Response {
 
     /**
      * create response for create user query with given status
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public CreateUserResponse(Status status, Map<String, Object> content) {

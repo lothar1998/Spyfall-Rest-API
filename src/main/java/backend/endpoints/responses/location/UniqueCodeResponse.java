@@ -22,7 +22,7 @@ public class UniqueCodeResponse extends Response {
 
     /**
      * construct unique code response object with given status and content
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public UniqueCodeResponse(Status status, Map<String, Object> content) {

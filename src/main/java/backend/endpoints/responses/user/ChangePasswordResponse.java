@@ -22,7 +22,7 @@ public class ChangePasswordResponse extends Response {
 
     /**
      * create response for "change password" query with status and content
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public ChangePasswordResponse(Status status, Map<String, Object> content) {

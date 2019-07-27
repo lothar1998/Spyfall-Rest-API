@@ -15,6 +15,7 @@ public interface ContextPaths {
     String USER_LOGIN = "/user/login";
     String USER_LOGOUT = "/user/logout";
     String USER_CHANGE_PASSWORD = "/user/password";
+    String USER_GET_ALL_USERS = "/user/all";
 
 
     /**

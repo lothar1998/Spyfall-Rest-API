@@ -22,7 +22,7 @@ public class CreateLocationResponse extends Response {
 
     /**
      * create response for create location query with status and content
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public CreateLocationResponse(Status status, Map<String, Object> content) {

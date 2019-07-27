@@ -1,5 +1,6 @@
 package backend.oauth2;
 
+import backend.endpoints.ContextPaths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +10,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -36,8 +36,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().authenticated().and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.NEVER);
+        http.authorizeRequests().antMatchers(ContextPaths.USER_CREATE).permitAll()
+                .and().authorizeRequests().antMatchers(ContextPaths.USER_GET_ALL_USERS).hasRole("ADMIN")
+                .anyRequest().authenticated();
     }
 
     @Override

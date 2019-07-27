@@ -16,7 +16,7 @@ public abstract class Response {
         ok, error
     }
 
-    private final String response_type;
+    private final String responseType;
     protected Status status;
     protected Map<String,Object> content;
 
@@ -24,16 +24,16 @@ public abstract class Response {
      * construct response object
      */
     public Response() {
-        response_type = null;
+        responseType = null;
     }
 
     /**
      * construct response object with given type and status
-     * @param response_type type of response
+     * @param responseType type of response
      * @param status response whether query was successful
      */
-    public Response(String response_type, Status status, Map<String, Object> content) {
-        this.response_type = response_type;
+    public Response(String responseType, Status status, Map<String, Object> content) {
+        this.responseType = responseType;
         this.status = status;
         this.content = content;
     }
@@ -42,8 +42,8 @@ public abstract class Response {
      * get type of response
      * @return type of response
      */
-    public String getResponse_type() {
-        return response_type;
+    public String getresponseType() {
+        return responseType;
     }
 
     /**

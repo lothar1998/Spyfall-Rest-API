@@ -22,7 +22,7 @@ public class ExistingLocationResponse extends Response {
 
     /**
      * construct existing location response object with given status and content
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content defines content of response
      */
     public ExistingLocationResponse(Status status, Map<String, Object> content) {

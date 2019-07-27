@@ -22,7 +22,7 @@ public class StopGameResponse extends Response {
 
     /**
      * construct stop game response object with status and content
-     * @param status shows whether changing password was properly
+     * @param status shows whether request was properly
      * @param content efines content of response
      */
     public StopGameResponse(Status status, Map<String, Object> content) {
