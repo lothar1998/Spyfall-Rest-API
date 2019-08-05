@@ -1,8 +1,7 @@
-package backend.oauth2;
+package backend.config.oauth2;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,10 +13,13 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+/**
+ * OAuth 2.0 config
+ *
+ * @author Piotr Kuglin
+ */
 @Configuration
-@ConfigurationProperties(prefix = "oauth")
 public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
-
     @Value("${oauth2.clientId}")
     private String clientId;
     @Value("${oauth2.clientSecret}")
@@ -46,24 +48,27 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
         converter.setSigningKey(signingKey);
         return converter;
     }
+
     @Bean
     public JwtTokenStore tokenStore() {
         return new JwtTokenStore(tokenEnhancer());
     }
+
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints){
         endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore())
                 .accessTokenConverter(tokenEnhancer());
     }
+
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security){
         security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
     }
+
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory().withClient(clientId).secret(encoder.encode(clientSecret)).scopes("read", "write")
                 .authorizedGrantTypes("password", "refresh_token").accessTokenValiditySeconds(tokenExpiredTime)
                 .refreshTokenValiditySeconds(refreshTokenExpiredTime);
-
     }
 }

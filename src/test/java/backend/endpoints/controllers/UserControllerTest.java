@@ -1,238 +1,255 @@
 package backend.endpoints.controllers;
 
+import backend.config.ProfileTypes;
+import backend.config.oauth2.UsersRoles;
+import backend.config.startup.StartupConfig;
 import backend.databases.entities.UserEntity;
-import backend.databases.exception.NullIdException;
 import backend.databases.repositories.UserRepository;
-import backend.endpoints.requests.ChangePasswordRequest;
-import backend.endpoints.requests.CreateUserRequest;
+import backend.endpoints.ContextPaths;
+import backend.endpoints.requests.user.UserChangePasswordRequest;
+import backend.endpoints.requests.user.UserCreationRequest;
 import backend.endpoints.responses.Response;
-import backend.endpoints.responses.user.CreateUserResponse;
-import backend.oauth2.UsersRoles;
-import org.junit.Before;
+import backend.endpoints.responses.user.change_password.UserChangePasswordMessages;
+import backend.endpoints.responses.user.change_password.UserChangePasswordResponse;
+import backend.endpoints.responses.user.creation.UserCreationMessages;
+import backend.endpoints.responses.user.creation.UserCreationResponse;
+import backend.endpoints.responses.user.signed_users_list.UserListResponse;
+import com.google.gson.Gson;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-@RunWith(MockitoJUnitRunner.class)
+/**
+ * UserController tests
+ *
+ * @author Piotr Kuglin
+ */
+@RunWith(SpringRunner.class)
+@WebMvcTest(UserController.class)
+@ActiveProfiles(value = ProfileTypes.DEVELOPMENT_PROFILE)
 public class UserControllerTest {
 
-    @Mock
-    UserRepository userRepository;
-
+    private static Gson gson = new Gson();
+    @MockBean
     private PasswordEncoder passwordEncoder;
-    private UserController userController;
+    @MockBean
+    private UserRepository userRepository;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Before
-    public void setUp(){
-        passwordEncoder = new BCryptPasswordEncoder();
-        userController = new UserController(userRepository,passwordEncoder);
+    @Test
+    public void createUser_should_validate_request() throws Exception {
+
+        UserCreationResponse response = new UserCreationResponse(Response.MessageType.ERROR, UserCreationMessages.BAD_CREDENTIALS, null);
+
+        UserCreationRequest request1 = new UserCreationRequest(null, "janko123", "abc@abc.pl");
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request1))).andExpect(status().isBadRequest())
+                .andExpect(content().json(gson.toJson(response)));
+
+        UserCreationRequest request2 = new UserCreationRequest("janko123", null, "abc@abc.pl");
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request2))).andExpect(status().isBadRequest())
+                .andExpect(content().json(gson.toJson(response)));
+
+        UserCreationRequest request3 = new UserCreationRequest("janko123", "janko123", null);
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request3))).andExpect(status().isBadRequest())
+                .andExpect(content().json(gson.toJson(response)));
+
+        UserCreationRequest request4 = new UserCreationRequest("jank", "janko123", "abc@abc.pl");
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request4))).andExpect(status().isBadRequest())
+                .andExpect(content().json(gson.toJson(response)));
+
+        UserCreationRequest request5 = new UserCreationRequest("janko", "jank3", "abc@abc.pl");
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request5))).andExpect(status().isBadRequest())
+                .andExpect(content().json(gson.toJson(response)));
+
+        UserCreationRequest request6 = new UserCreationRequest("janko", "janko123", "abc@abc@.pl");
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request6))).andExpect(status().isBadRequest())
+                .andExpect(content().json(gson.toJson(response)));
     }
 
     @Test
-    public void createUser_should_create_user() {
-        //given
-        CreateUserRequest userToCreate = new CreateUserRequest("lorema","ipsumdolor","sit@amenc.pl","USER");
+    public void createUser_should_create_user() throws Exception {
+        String credentials = "janko123";
+        String email = "jan@kowalski.pl";
 
-        UserEntity createdUser = new UserEntity(userToCreate.getUsername(),passwordEncoder.encode(userToCreate.getPassword()),userToCreate.getEmail(),userToCreate.getAuthority());
-        createdUser.setId(1L);
+        Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("encoded");
+        Mockito.when(userRepository.save(Mockito.any(UserEntity.class))).thenAnswer((Answer<UserEntity>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return (UserEntity) args[0];
+        });
 
-        Map<String, Object> content = new LinkedHashMap<>();
-        content.put("message","user has been created");
-        ResponseEntity<?> expectedResponse = ResponseEntity.status(HttpStatus.CREATED).body(new CreateUserResponse(Response.Status.ok, content));
-
-        //when
-        Mockito.when(userRepository.save(Mockito.any())).thenReturn(createdUser);
-
-        //then
-        final ResponseEntity<?> response = userController.createUser(userToCreate);
-
-
-        assertEquals(expectedResponse.getStatusCode(),response.getStatusCode());
+        UserCreationRequest request = new UserCreationRequest(credentials, credentials, email);
+        UserCreationResponse response = new UserCreationResponse(Response.MessageType.MESSAGE, UserCreationMessages.USER_HAS_BEEN_CREATED, new UserEntity(credentials, StartupConfig.HASHED_PASSWORD_REPLACEMENT, email, UsersRoles.USER));
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))).andExpect(status().isCreated())
+                .andExpect(content().json(gson.toJson(response)));
     }
 
     @Test
-    public void createUser_should_handle_database_error_during_user_creation(){
-        //given
-        CreateUserRequest userToCreate = new CreateUserRequest("lorema","ipsumdolor","sit@amenc.pl","USER");
+    public void createUser_should_occur_database_error() throws Exception {
+        Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("encoded");
+        Mockito.when(userRepository.save(Mockito.any(UserEntity.class))).thenReturn(null);
 
-        UserEntity createdUser = new UserEntity(userToCreate.getUsername(),passwordEncoder.encode(userToCreate.getPassword()),userToCreate.getEmail(),userToCreate.getAuthority());
-        createdUser.setId(1L);
+        UserCreationRequest request = new UserCreationRequest("janko123", "janko123", "jan@kowalski.pl");
+        UserCreationResponse response = new UserCreationResponse(Response.MessageType.ERROR, UserCreationMessages.DATABASE_ERROR, null);
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().json(gson.toJson(response)));
+    }
 
-        Map<String, Object> content = new LinkedHashMap<>();
-        content.put("message","user has not been created because of internal server error");
-        ResponseEntity<?> expectedResponse = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CreateUserResponse(Response.Status.error, content));
+    @Test
+    public void createUser_should_occur_user_already_exist_response() throws Exception {
 
-        //when
+        String credentials = "janko123";
+        String email = "jan@kowalski.pl";
+
+        Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("encoded");
+        Mockito.when(userRepository.save(Mockito.any(UserEntity.class))).thenAnswer((Answer<UserEntity>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return (UserEntity) args[0];
+        });
+
+        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(new UserEntity(credentials, credentials, email, UsersRoles.USER).setId(1L));
+        UserCreationRequest request = new UserCreationRequest("janko123", "janko123", "jan@kowalski.pl");
+        UserCreationResponse response = new UserCreationResponse(Response.MessageType.ERROR, UserCreationMessages.USER_ALREADY_EXISTS, null);
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
+                .andExpect(status().isConflict()).andExpect(content().json(gson.toJson(response)));
+    }
+
+    @Test
+    public void changePassword_should_validate_request() throws Exception {
+
+        UserChangePasswordResponse response = new UserChangePasswordResponse(Response.MessageType.ERROR, UserChangePasswordMessages.BAD_CREDENTIALS);
+
+        UserChangePasswordRequest request1 = new UserChangePasswordRequest("asd", "janko123");
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request1)))
+                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(response)));
+
+        UserChangePasswordRequest request2 = new UserChangePasswordRequest("janko123", "123");
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request2)))
+                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(response)));
+    }
+
+    @Test
+    public void changePassword_should_validate_credentials_with_token() throws Exception {
+
+        final String oldPassword = "janko123";
+        final String newPassword = "janko1234";
+        final String exampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjUwMjM3MjEsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc3YmQwYzJkLTViNGQtNGU0YS1hNmVjLTEyMjk4OWU5YTUwZCIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.C31mSjrCsinO-bKi_Ww6GoCSnbPmYyasTolkGp5Td-o";
+
+        UserChangePasswordResponse response = new UserChangePasswordResponse(Response.MessageType.ERROR, UserChangePasswordMessages.BAD_CREDENTIALS);
+
+        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword + "bad credential"), "email@kowalski.pl", UsersRoles.USER).setId(1L);
+
+
+        UserChangePasswordRequest request = new UserChangePasswordRequest(oldPassword, newPassword);
+
+        //1) - incorrect oldPassword
+        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
+
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+                .header("authorization", "Bearer " + exampleToken))
+                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(response)));
+
+        //2) - user has not been found
+        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(null);
+
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+                .header("authorization", "Bearer " + exampleToken))
+                .andExpect(status().isNotFound()).andExpect(content().json(gson.toJson(response)));
+    }
+
+    @Test
+    public void changePassword_should_return_database_internal_server_error() throws Exception {
+        final String oldPassword = "janko123";
+        final String newPassword = "janko1234";
+        final String exampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjUwMjM3MjEsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc3YmQwYzJkLTViNGQtNGU0YS1hNmVjLTEyMjk4OWU5YTUwZCIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.C31mSjrCsinO-bKi_Ww6GoCSnbPmYyasTolkGp5Td-o";
+
+        UserChangePasswordResponse response = new UserChangePasswordResponse(Response.MessageType.ERROR, UserChangePasswordMessages.DATABASE_ERROR);
+
+        Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("ENCODED_PASSWORD");
+        Mockito.when(passwordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
         Mockito.when(userRepository.save(Mockito.any())).thenReturn(null);
 
-        //then
-        final ResponseEntity<?> response = userController.createUser(userToCreate);
+        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER).setId(1L);
 
+        UserChangePasswordRequest request = new UserChangePasswordRequest(oldPassword, newPassword);
 
-        assertEquals(expectedResponse.getStatusCode(),response.getStatusCode());
+        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
+
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+                .header("authorization", "Bearer " + exampleToken))
+                .andExpect(status().isInternalServerError()).andExpect(content().json(gson.toJson(response)));
     }
 
     @Test
-    public void createUser_should_not_create_user_with_existing_username(){
-        //given
-        CreateUserRequest userToCreate = new CreateUserRequest("lorema","ipsumdolor","sit@amenc.pl","USER");
+    public void changePassword_should_change_password() throws Exception {
 
-        UserEntity createdUser = new UserEntity(userToCreate.getUsername(),passwordEncoder.encode(userToCreate.getPassword()),userToCreate.getEmail(),userToCreate.getAuthority());
-        createdUser.setId(1L);
+        final String oldPassword = "janko123";
+        final String newPassword = "janko1234";
+        final String exampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjUwMjM3MjEsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc3YmQwYzJkLTViNGQtNGU0YS1hNmVjLTEyMjk4OWU5YTUwZCIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.C31mSjrCsinO-bKi_Ww6GoCSnbPmYyasTolkGp5Td-o";
 
-        Map<String, Object> content = new LinkedHashMap<>();
-        content.put("message","user already exists");
-        ResponseEntity<?> expectedResponse = ResponseEntity.status(HttpStatus.CONFLICT).body(new CreateUserResponse(Response.Status.error, content));
+        UserChangePasswordResponse response = new UserChangePasswordResponse(Response.MessageType.MESSAGE, UserChangePasswordMessages.PASSWORD_HAS_BEEN_CHANGED);
 
-        //when
-        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(createdUser);
+        Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("ENCODED_PASSWORD");
+        Mockito.when(passwordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
+        Mockito.when(userRepository.save(Mockito.any())).thenAnswer((Answer<UserEntity>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return (UserEntity) args[0];
+        });
 
-        //then
-        final ResponseEntity<?> response = userController.createUser(userToCreate);
+        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER).setId(1L);
 
+        UserChangePasswordRequest request = new UserChangePasswordRequest(oldPassword, newPassword);
 
-        assertEquals(expectedResponse.getStatusCode(),response.getStatusCode());
+        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
+
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+                .header("authorization", "Bearer " + exampleToken))
+                .andExpect(status().isOk()).andExpect(content().json(gson.toJson(response)));
     }
 
     @Test
-    public void getListOfCurrentSignedUsers_should_response_list_of_all_users(){
-        //given
-        List<UserEntity> users = new ArrayList<>();
-        users.add(new UserEntity("loremi", "impsumdolor", "sitamenc@gmail.com", "ROLE_ADMIN").setId(1L));
-        users.add(new UserEntity("consectetur", "adipiscing", "elit@sed.com", "ROLE_USER").setId(2L));
-        users.add(new UserEntity("eiusmod", "incididunt ", "incididunt@gmail.com", "ROLE_USER").setId(3L));
+    public void showAllSignedUsers_should_return_user_list() throws Exception {
 
-        //when
-        Mockito.when(userRepository.findAll()).thenReturn(users);
+        List<UserEntity> userList = new ArrayList<>();
+        userList.add(new UserEntity("testtest", "testpassword", "mail@mail.com", UsersRoles.USER));
+        userList.add(new UserEntity("admin", "adminadmin", "admin@admin.pl", UsersRoles.ADMIN));
 
-        assertEquals(HttpStatus.OK, userController.getListOfCurrentSignedUsers().getStatusCode());
-    }
+        Mockito.when(userRepository.findAll()).thenReturn(userList);
 
-    @Test(expected = NullIdException.class)
-    public void getListOfCurrentSignedUsers_should_throw_null_pointer_exception_during_getting_list_of_all_users(){
-        //given
-        List<UserEntity> users = new ArrayList<>();
-        users.add(new UserEntity("loremi", "impsumdolor", "sitamenc@gmail.com", "ROLE_ADMIN").setId(1L));
-        users.add(new UserEntity("consectetur", "adipiscing", "elit@sed.com", "ROLE_USER"));
-        users.add(new UserEntity("eiusmod", "incididunt ", "incididunt@gmail.com", "ROLE_USER").setId(3L));
+        userList.forEach(userEntity -> {
+            userEntity.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
+        });
 
-        //when
-        Mockito.when(userRepository.findAll()).thenReturn(users);
+        UserListResponse response = new UserListResponse(Response.MessageType.STATUS, userList);
 
-        userController.getListOfCurrentSignedUsers();
+
+        mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isOk());
     }
 
     @Test
-    public void changePassword_should_return_error_caused_by_incorrect_login() {
-        //given
-        String username = "janko1223";
-        String oldPassword = "janko123";
+    public void showAllSignedUsers_should_return_database_error() throws Exception {
+        UserListResponse response = new UserListResponse(Response.MessageType.ERROR, null);
 
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjQwODgxNDQsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjBiMDNjYTIwLTJmOTktNDFmYS04YTE5LTkwZTRkMWFmY2JjMSIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.nUkGmSTp5oOXXyUEfdE5CQfkK38LuI-_UtzJoK_VFCw";
+        Mockito.when(userRepository.findAll()).thenReturn(null);
 
-        ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword(oldPassword);
-        request.setPassword("testpassword");
-
-        Map<String,String> authorizationHeader = new LinkedHashMap<>();
-        authorizationHeader.put("authorization","Bearer " + token);
-
-        UserEntity user = new UserEntity(username,passwordEncoder.encode(oldPassword),"test@email.com", UsersRoles.USER).setId(1L);
-
-        //when
-        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(null);
-        //test
-
-        assertEquals(HttpStatus.BAD_REQUEST, userController.changePassword(authorizationHeader,request).getStatusCode());
-    }
-
-    @Test
-    public void changePassword_should_return_error_caused_by_incorrect_old_password() {
-        //given
-        String username = "janko123";
-        String oldPassword = "janko123";
-
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjQwODgxNDQsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjBiMDNjYTIwLTJmOTktNDFmYS04YTE5LTkwZTRkMWFmY2JjMSIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.nUkGmSTp5oOXXyUEfdE5CQfkK38LuI-_UtzJoK_VFCw";
-
-        ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword(oldPassword);
-        request.setPassword("testpassword");
-
-        Map<String,String> authorizationHeader = new LinkedHashMap<>();
-        authorizationHeader.put("authorization","Bearer " + token);
-
-        UserEntity user = new UserEntity(username,passwordEncoder.encode(oldPassword + "xdd"),"test@email.com", UsersRoles.USER).setId(1L);
-
-        //when
-        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(user);
-        //test
-
-        assertEquals(HttpStatus.BAD_REQUEST, userController.changePassword(authorizationHeader,request).getStatusCode());
-    }
-
-    @Test
-    public void changePassword_should_return_error_caused_by_incorrect_new_password() {
-        //given
-        String username = "janko123";
-        String oldPassword = "janko123";
-
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjQwODgxNDQsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjBiMDNjYTIwLTJmOTktNDFmYS04YTE5LTkwZTRkMWFmY2JjMSIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.nUkGmSTp5oOXXyUEfdE5CQfkK38LuI-_UtzJoK_VFCw";
-
-        ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword(oldPassword);
-        request.setPassword("test");
-
-        Map<String,String> authorizationHeader = new LinkedHashMap<>();
-        authorizationHeader.put("authorization","Bearer " + token);
-
-        UserEntity user = new UserEntity(username,passwordEncoder.encode(oldPassword),"test@email.com", UsersRoles.USER).setId(1L);
-
-        //when
-        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(user);
-        //test
-
-        assertEquals(HttpStatus.BAD_REQUEST, userController.changePassword(authorizationHeader,request).getStatusCode());
-    }
-
-    @Test
-    public void changePassword_should_return_ok_and_change_password() {
-        //given
-        String username = "janko123";
-        String oldPassword = "janko123";
-
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjQwODgxNDQsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6IjBiMDNjYTIwLTJmOTktNDFmYS04YTE5LTkwZTRkMWFmY2JjMSIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.nUkGmSTp5oOXXyUEfdE5CQfkK38LuI-_UtzJoK_VFCw";
-
-        ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword(oldPassword);
-        request.setPassword("testtest");
-
-        Map<String,String> authorizationHeader = new LinkedHashMap<>();
-        authorizationHeader.put("authorization","Bearer " + token);
-
-        UserEntity user = new UserEntity(username,passwordEncoder.encode(oldPassword),"test@email.com", UsersRoles.USER).setId(1L);
-
-        UserEntity foundUser = new UserEntity(user.getUsername(),user.getPassword(),user.getEmail(),user.getAuthority()).setId(user.getId());
-        foundUser.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        //when
-        Mockito.when(userRepository.save(Mockito.any())).thenAnswer(i -> i.getArguments()[0]);
-        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(user);
-        //test
-
-        assertEquals(HttpStatus.OK, userController.changePassword(authorizationHeader,request).getStatusCode());
+        mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isInternalServerError());
     }
 }

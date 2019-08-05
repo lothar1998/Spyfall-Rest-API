@@ -1,26 +1,32 @@
 package backend.endpoints.controllers;
 
-import backend.StartupConfig;
+import backend.config.oauth2.UsersRoles;
+import backend.config.startup.StartupConfig;
 import backend.databases.entities.UserEntity;
-import backend.databases.exception.NullIdException;
 import backend.databases.repositories.UserRepository;
 import backend.endpoints.ContextPaths;
 import backend.endpoints.JWTParser;
-import backend.endpoints.requests.ChangePasswordRequest;
-import backend.endpoints.requests.CreateUserRequest;
+import backend.endpoints.requests.user.UserChangePasswordRequest;
+import backend.endpoints.requests.user.UserCreationRequest;
 import backend.endpoints.responses.Response;
-import backend.endpoints.responses.user.*;
+import backend.endpoints.responses.user.change_password.UserChangePasswordMessages;
+import backend.endpoints.responses.user.change_password.UserChangePasswordResponse;
+import backend.endpoints.responses.user.creation.UserCreationMessages;
+import backend.endpoints.responses.user.creation.UserCreationResponse;
+import backend.endpoints.responses.user.signed_users_list.UserListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * implementation of REST controller for users queries
@@ -28,148 +34,96 @@ import java.util.Map;
  * @author Piotr Kuglin
  */
 @RestController
+@RequestMapping(ContextPaths.USER_MAIN_CONTEXT)
 public class UserController {
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder){
-        this.userRepository=userRepository;
-        this.passwordEncoder=passwordEncoder;
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
+
     /**
-     * endpoint which is used to create new user
-     * @param userToCreate object of new user to creation
-     * @return response of server for creation query
+     * create user with given request
+     * @param user user's credentials
+     * @param errors occurs errors
+     * @return query response
      */
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.USER_CREATE)
-    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest userToCreate){
-        Map<String,Object> responseContent = new LinkedHashMap<>();
-        CreateUserResponse response = new CreateUserResponse();
-
-        if(userRepository.findUserByUsername(userToCreate.getUsername())!=null){
-            responseContent.put("message", "user already exists");
-            response.setStatus(Response.Status.error).setContent(responseContent);
-
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    public ResponseEntity createUser(@Valid @RequestBody UserCreationRequest user, Errors errors) {
+        if (errors.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserCreationResponse(Response.MessageType.ERROR, UserCreationMessages.BAD_CREDENTIALS, null));
         }
 
+        if (userRepository.findUserByUsername(user.getUsername()) != null)
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new UserCreationResponse(Response.MessageType.ERROR, UserCreationMessages.USER_ALREADY_EXISTS, null));
 
+        UserEntity savedUser = userRepository.save(new UserEntity(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getEmail(), UsersRoles.USER));
 
-        UserEntity createdUser = userRepository.save(new UserEntity(userToCreate.getUsername(),passwordEncoder.encode(userToCreate.getPassword()),userToCreate.getEmail(),userToCreate.getAuthority()));
+        if (savedUser == null)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UserCreationResponse(Response.MessageType.ERROR, UserCreationMessages.DATABASE_ERROR, null));
 
-        if(createdUser==null){
-
-            responseContent.put("message","user has not been created because of internal server error");
-            response.setStatus(Response.Status.error).setContent(responseContent);
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-
-
-        responseContent.put("message","user has been created");
-        response.setStatus(Response.Status.ok).setContent(responseContent);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PostMapping(ContextPaths.USER_LOGIN)
-    public ResponseEntity<?> loginClient(/*TODO Login credentials as argument*/){
-        LoginResponse response = new LoginResponse();
-
-        userRepository.findAll().forEach(System.out::println);
-
-        //TODO try login and password, if correct ACCEPTED, else FORBIDDEN
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Resource<>(response));
-    }
-
-    @PostMapping(ContextPaths.USER_LOGOUT)
-    public ResponseEntity<?> logoutClient(/*TODO logout class as argument*/){
-        LogoutResponse response = new LogoutResponse();
-
-        //TODO try logout, if ok OK, else INTERNAL SERVER ERROR
-        return ResponseEntity.ok().body(new Resource<>(response));
+        savedUser.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new UserCreationResponse(Response.MessageType.MESSAGE, UserCreationMessages.USER_HAS_BEEN_CREATED, savedUser));
     }
 
     /**
-     * endpoint which is used to change password of user
-     * @param headers HTTP header with authorization param which contains Bearer Token
-     * @param userCredentials old and new password of user
-     * @return response with info about changing user's password
+     * change user's password
+     * @param request user's old and new password
+     * @param errors occurs errors
+     * @param header authorization header - JWT Token
+     * @return query response
      */
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.USER_CHANGE_PASSWORD)
-    public ResponseEntity<?> changePassword(@RequestHeader Map<String, String> headers, @RequestBody ChangePasswordRequest userCredentials){
-        ChangePasswordResponse response = new ChangePasswordResponse();
-        Map<String, Object> responseContent = new LinkedHashMap<>();
+    public ResponseEntity changePassword(@Valid @RequestBody UserChangePasswordRequest request, Errors errors, @RequestHeader Map<String, String> header) {
+        if (errors.hasErrors())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserChangePasswordResponse(Response.MessageType.ERROR, UserChangePasswordMessages.BAD_CREDENTIALS));
 
-        String header = headers.get("authorization").split(" ")[1];
-        String username = JWTParser.getContent(header).get("user_name").toString();
+        String token = header.get("authorization").split(" ")[1];
+
+        String username = JWTParser.getContent(token).get("user_name").toString();
 
         UserEntity foundUser = userRepository.findUserByUsername(username);
 
-        if((foundUser == null) || (userCredentials.getPassword().length() < StartupConfig.passwordMinLength)){
-            responseContent.put("message","bad credentials");
-            response.setStatus(Response.Status.error).setContent(responseContent);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Resource<>(response));
-        }
-        else if(passwordEncoder.matches(userCredentials.getOldPassword(),foundUser.getPassword())){
-            foundUser.setPassword(passwordEncoder.encode(userCredentials.getPassword()));
-            UserEntity savedUser = userRepository.save(foundUser);
+        if (foundUser == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new UserChangePasswordResponse(Response.MessageType.ERROR, UserChangePasswordMessages.BAD_CREDENTIALS));
 
-            if(savedUser == null){
-                responseContent.put("message","user has not been updated caused by internal server error");
-                response.setStatus(Response.Status.error).setContent(responseContent);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Resource<>(response));
-            }
-            else if(savedUser.equals(foundUser)){
-                responseContent.put("message","user has been updated");
-                response.setStatus(Response.Status.ok).setContent(responseContent);
-                return ResponseEntity.status(HttpStatus.OK).body(new Resource<>(response));
-            }
-            else{
-                responseContent.put("message","internal server error");
-                response.setStatus(Response.Status.error).setContent(responseContent);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Resource<>(response));
-            }
-        }
-        else{
-            responseContent.put("message","bad credentials");
-            response.setStatus(Response.Status.error).setContent(responseContent);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Resource<>(response));
-        }
+        if (!passwordEncoder.matches(request.getOldPassword(), foundUser.getPassword()))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserChangePasswordResponse(Response.MessageType.ERROR, UserChangePasswordMessages.BAD_CREDENTIALS));
+
+        UserEntity savedUser = userRepository.save(foundUser.setPassword(passwordEncoder.encode(request.getNewPassword())));
+
+        if (savedUser == null)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UserChangePasswordResponse(Response.MessageType.ERROR, UserChangePasswordMessages.DATABASE_ERROR));
+
+        return ResponseEntity.status(HttpStatus.OK).body(new UserChangePasswordResponse(Response.MessageType.MESSAGE, UserChangePasswordMessages.PASSWORD_HAS_BEEN_CHANGED));
     }
 
     /**
-     * endpoint which is used to list all signed user
-     * @return list of signed user as response for query
+     * show all signed user lists
+     * @return response for query
      */
+    @Secured(UsersRoles.ADMIN)
     @GetMapping(ContextPaths.USER_GET_ALL_USERS)
-    public ResponseEntity<?> getListOfCurrentSignedUsers(){
-        SignedUserListResponse response = new SignedUserListResponse();
+    public ResponseEntity showAllSignedUsers() {
+        List<UserEntity> users = new ArrayList<>();
 
-        Map<String, Object> responseContent = new LinkedHashMap<>();
+        Iterable<UserEntity> userList = userRepository.findAll();
 
-        List<UserEntity> userFromRepository = new ArrayList<>();
+        if (userList == null)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UserListResponse(Response.MessageType.ERROR, null));
 
-        userRepository.findAll().forEach(userFromRepository::add);
-
-        userFromRepository.forEach((user)->{
-            Map<String, String> userDetails = new LinkedHashMap<>();
-
-            userDetails.put("username",user.getUsername());
-            userDetails.put("email", user.getEmail());
-            userDetails.put("authority", user.getAuthority());
-
-            if(user.getId()==null)
-                throw new NullIdException(user.getUsername());
-
-            responseContent.put(user.getId().toString(),userDetails);
+        userList.forEach(user -> {
+            user.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
+            users.add(user);
         });
 
-        response.setStatus(Response.Status.ok).setContent(responseContent);
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(new UserListResponse(Response.MessageType.STATUS, users));
     }
 }

@@ -1,4 +1,4 @@
-package backend.oauth2;
+package backend.config.oauth2;
 
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
@@ -7,6 +7,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * custom details service for user
+ *
+ * @author Piotr Kuglin
+ */
 @Service
 public class CustomDetailsService implements UserDetailsService {
 
@@ -19,7 +24,7 @@ public class CustomDetailsService implements UserDetailsService {
 
 
     @Override
-    public CustomUser loadUserByUsername(String username) throws UsernameNotFoundException {
+    public CustomUser loadUserByUsername(String username) {
 
         UserEntity user = userRepository.findUserByUsername(username);
 

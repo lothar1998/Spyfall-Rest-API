@@ -1,9 +1,10 @@
 package backend.databases.entities;
 
-import backend.StartupConfig;
+import backend.config.startup.StartupConfig;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 
@@ -11,16 +12,23 @@ import java.util.Objects;
 @Table(name = "users")
 public class UserEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "username") @NotNull @Size(min = StartupConfig.usernameMinLength)
+    @Column(name = "username")
+    @NotNull
+    @Size(min = StartupConfig.USERNAME_MIN_LENGTH)
     private String username;
 
-    @Column(name = "password") @NotNull @Size(min = StartupConfig.usernameMinLength)
+    @Column(name = "password")
+    @NotNull
+    @Size(min = StartupConfig.PASSWORD_MIN_LENGTH)
     private String password;
 
-    @Column(name = "email") @NotNull
+    @Column(name = "email")
+    @NotNull
+    @Pattern(regexp = "[a-zA-Z0-9-_.]+@[a-z0-9-.]+.[a-z0-9]{1,4}")
     private String email;
 
     @Column(name = "authority") @NotNull

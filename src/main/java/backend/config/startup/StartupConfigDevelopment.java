@@ -1,22 +1,31 @@
-package backend;
+package backend.config.startup;
 
+import backend.config.ProfileTypes;
+import backend.config.oauth2.UsersRoles;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@ConfigurationProperties("default")
-public class StartupConfig {
+/**
+ * startup config for development profile
+ *
+ * @author Piotr Kuglin
+ */
+@Configuration
+@Profile(ProfileTypes.DEVELOPMENT_PROFILE)
+public class StartupConfigDevelopment {
 
     private PasswordEncoder encoder;
     private UserRepository repository;
 
-    public final static int passwordMinLength = 8;
-    public final static int usernameMinLength = 5;
+    public static final int PASSWORD_MIN_LENGTH = 8;
+    public static final int USERNAME_MIN_LENGTH = 5;
 
     @Value("${default.admin.username}")
     private String adminUserName;
@@ -26,7 +35,7 @@ public class StartupConfig {
     private String adminEmail;
 
     @Autowired
-    public StartupConfig(PasswordEncoder encoder,UserRepository repository) {
+    public StartupConfigDevelopment(PasswordEncoder encoder, UserRepository repository) {
         this.encoder=encoder;
         this.repository=repository;
     }
@@ -38,9 +47,10 @@ public class StartupConfig {
     CommandLineRunner init(){
         return args -> {
             if(repository.findUserByUsername(adminUserName)==null)
-                repository.save(new UserEntity(adminUserName, encoder.encode(adminPassword), adminEmail, "ROLE_ADMIN"));
+                repository.save(new UserEntity(adminUserName, encoder.encode(adminPassword), adminEmail, UsersRoles.ADMIN));
 
-            repository.save(new UserEntity("janko123",encoder.encode("janko123"),"janko123","ROLE_USER"));//TEMPORARY
+            final String credentials = "janko123";
+            repository.save(new UserEntity(credentials, encoder.encode(credentials), credentials, UsersRoles.USER));
         };
     }
 }

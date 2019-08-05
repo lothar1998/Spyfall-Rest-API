@@ -14,13 +14,16 @@ public class JWTParser {
 
     private static Gson gson=new Gson();
 
+    private JWTParser() {
+    }
+
     /**
      * decode JWT Token
      * @param jwtToken token as String
      * @return decoded token as map
      */
     public static Map getContent(String jwtToken){
-        String decoded_string = JwtHelper.decode(jwtToken).getClaims();
-        return gson.fromJson(decoded_string, Map.class);
+        String decodedString = JwtHelper.decode(jwtToken).getClaims();
+        return gson.fromJson(decodedString, Map.class);
     }
 }
