@@ -7,8 +7,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Objects;
 
+
+/**
+ * list of users response pattern
+ *
+ * @author Piotr Kuglin
+ */
 @NoArgsConstructor
 @Getter
 @Setter
@@ -19,19 +24,5 @@ public class UserListResponseDto extends Response {
     public UserListResponseDto(MessageType type, List<UserEntity> users) {
         super(type);
         this.signedUsers = users;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        UserListResponseDto that = (UserListResponseDto) o;
-        return Objects.equals(signedUsers, that.signedUsers);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), signedUsers);
     }
 }

@@ -3,6 +3,11 @@ package backend.models.response;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 
+/**
+ * pattern of exception response handled by @link RestControllerExceptionHandler
+ *
+ * @author Piotr Kuglin
+ */
 @Data
 public class ExceptionResponse {
 
