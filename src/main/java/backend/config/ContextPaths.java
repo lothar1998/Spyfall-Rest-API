@@ -1,4 +1,6 @@
-package backend.endpoints;
+package backend.config;
+
+import backend.services.UserController;
 
 /**
  * class which stores context paths to controllers
@@ -9,7 +11,7 @@ public class ContextPaths {
 
     /**
      * user controller paths
-     * @see backend.endpoints.controllers.UserController
+     * @see UserController
      */
     public static final String USER_MAIN_CONTEXT = "/user";
     public static final String USER_CREATE = "/create";

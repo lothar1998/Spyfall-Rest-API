@@ -1,4 +1,4 @@
-package backend.endpoints.requests.user;
+package backend.models.request.user;
 
 import backend.config.startup.StartupConfig;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UserChangePasswordRequest {
+public class PasswordChangeDto {
 
     @NotNull
     @Size(min = StartupConfig.PASSWORD_MIN_LENGTH)

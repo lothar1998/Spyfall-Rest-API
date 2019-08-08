@@ -1,4 +1,4 @@
-package backend.endpoints;
+package backend.parsers;
 
 import com.google.gson.Gson;
 import org.springframework.security.jwt.JwtHelper;

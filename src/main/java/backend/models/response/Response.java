@@ -1,4 +1,4 @@
-package backend.endpoints.responses;
+package backend.models.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

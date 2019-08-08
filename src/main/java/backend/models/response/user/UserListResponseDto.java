@@ -1,7 +1,7 @@
-package backend.endpoints.responses.user.signed_users_list;
+package backend.models.response.user;
 
 import backend.databases.entities.UserEntity;
-import backend.endpoints.responses.Response;
+import backend.models.response.Response;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,11 +12,11 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserListResponse extends Response {
+public class UserListResponseDto extends Response {
 
     private List<UserEntity> signedUsers;
 
-    public UserListResponse(MessageType type, List<UserEntity> users) {
+    public UserListResponseDto(MessageType type, List<UserEntity> users) {
         super(type);
         this.signedUsers = users;
     }
@@ -26,7 +26,7 @@ public class UserListResponse extends Response {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        UserListResponse that = (UserListResponse) o;
+        UserListResponseDto that = (UserListResponseDto) o;
         return Objects.equals(signedUsers, that.signedUsers);
     }
 

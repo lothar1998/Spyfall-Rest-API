@@ -7,12 +7,16 @@ import backend.databases.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.ResponseErrorHandler;
 
 /**
  * startup config for production profile
@@ -51,6 +55,17 @@ public class StartupConfig {
         return args -> {
             if (repository.findUserByUsername(adminUserName) == null)
                 repository.save(new UserEntity(adminUserName, encoder.encode(adminPassword), adminEmail, UsersRoles.ADMIN));
+        };
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ResponseErrorHandler.class)
+    public ResponseErrorHandler responseErrorHandler() {
+        return new DefaultResponseErrorHandler() {
+            @Override
+            public boolean hasError(ClientHttpResponse response) {
+                return false;
+            }
         };
     }
 }

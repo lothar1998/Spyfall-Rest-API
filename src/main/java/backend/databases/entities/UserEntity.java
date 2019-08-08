@@ -1,15 +1,23 @@
 package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.Objects;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@EqualsAndHashCode
+@NoArgsConstructor
 public class UserEntity {
 
     @Id
@@ -18,100 +26,35 @@ public class UserEntity {
 
     @Column(name = "username")
     @NotNull
+    @NotBlank
     @Size(min = StartupConfig.USERNAME_MIN_LENGTH)
     private String username;
 
     @Column(name = "password")
     @NotNull
+    @NotBlank
     @Size(min = StartupConfig.PASSWORD_MIN_LENGTH)
     private String password;
 
     @Column(name = "email")
     @NotNull
+    @NotBlank
     @Pattern(regexp = "[a-zA-Z0-9-_.]+@[a-z0-9-.]+.[a-z0-9]{1,4}")
     private String email;
 
-    @Column(name = "authority") @NotNull
+    @Column(name = "authority")
+    @NotNull
+    @NotBlank
     private String authority;
 
-    public UserEntity() { }
+    public UserEntity(@NotNull @NotBlank @Size(min = StartupConfig.USERNAME_MIN_LENGTH) String username,
+                      @NotNull @NotBlank @Size(min = StartupConfig.PASSWORD_MIN_LENGTH) String password,
+                      @NotNull @NotBlank @Pattern(regexp = "[a-zA-Z0-9-_.]+@[a-z0-9-.]+.[a-z0-9]{1,4}") String email,
+                      @NotNull @NotBlank String authority) {
 
-    public UserEntity(String username, String password, String email, String authority) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.authority = authority;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public UserEntity setId(Long id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public UserEntity setUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public UserEntity setPassword(String password) {
-        this.password = password;
-        return this;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public UserEntity setEmail(String email) {
-        this.email = email;
-        return this;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public UserEntity setAuthority(String authority) {
-        this.authority = authority;
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserEntity that = (UserEntity) o;
-        return username.equals(that.username) &&
-                password.equals(that.password) &&
-                email.equals(that.email) &&
-                authority.equals(that.authority);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(username, password, email, authority);
-    }
-
-    @Override
-    public String toString() {
-        return "UserEntity{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", email='" + email + '\'' +
-                ", authority='" + authority + '\'' +
-                '}';
     }
 }

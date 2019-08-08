@@ -1,4 +1,4 @@
-package backend.endpoints.requests.user;
+package backend.models.request.user;
 
 import backend.config.startup.StartupConfig;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UserCreationRequest {
+public class UserCreationDto {
 
     @NotNull
     @Size(min = StartupConfig.USERNAME_MIN_LENGTH)

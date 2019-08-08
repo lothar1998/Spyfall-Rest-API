@@ -1,6 +1,6 @@
-package backend.endpoints.responses.user.change_password;
+package backend.models.response.user;
 
-import backend.endpoints.responses.Response;
+import backend.models.response.Response;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,11 +15,11 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserChangePasswordResponse extends Response {
+public class PasswordChangeResponseDto extends Response {
 
     private String message;
 
-    public UserChangePasswordResponse(MessageType type, String message) {
+    public PasswordChangeResponseDto(MessageType type, String message) {
         super(type);
         this.message = message;
     }
@@ -29,7 +29,7 @@ public class UserChangePasswordResponse extends Response {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        UserChangePasswordResponse response = (UserChangePasswordResponse) o;
+        PasswordChangeResponseDto response = (PasswordChangeResponseDto) o;
         return Objects.equals(message, response.message);
     }
 

@@ -1,7 +1,7 @@
-package backend.endpoints.responses.user.creation;
+package backend.models.response.user;
 
 import backend.databases.entities.UserEntity;
-import backend.endpoints.responses.Response;
+import backend.models.response.Response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,12 +19,12 @@ import java.util.Objects;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserCreationResponse extends Response {
+public class UserCreationResponseDto extends Response {
 
     UserEntity user;
     private String message;
 
-    public UserCreationResponse(MessageType type, String message, UserEntity user) {
+    public UserCreationResponseDto(MessageType type, String message, UserEntity user) {
         super(type);
         this.message = message;
         this.user = user;
@@ -35,7 +35,7 @@ public class UserCreationResponse extends Response {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        UserCreationResponse that = (UserCreationResponse) o;
+        UserCreationResponseDto that = (UserCreationResponseDto) o;
         return Objects.equals(message, that.message) &&
                 Objects.equals(user, that.user);
     }
