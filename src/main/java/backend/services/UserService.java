@@ -9,6 +9,7 @@ import backend.exceptions.DatabaseException;
 import backend.exceptions.ExceptionMessages;
 import backend.exceptions.UserHasNotBeenCreatedException;
 import backend.models.request.user.PasswordChangeDto;
+import backend.models.request.user.UserCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.user.PasswordChangeResponseDto;
@@ -57,7 +58,7 @@ public class UserService {
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.USER_CREATE)
-    public ResponseEntity createUser(@Valid @RequestBody backend.models.request.user.UserCreationDto user, Errors errors) {
+    public ResponseEntity createUser(@Valid @RequestBody UserCreationDto user, Errors errors) {
         if (errors.hasErrors())
             throw new BadCredentialsException(ExceptionMessages.VALIDATION_ERROR);
 

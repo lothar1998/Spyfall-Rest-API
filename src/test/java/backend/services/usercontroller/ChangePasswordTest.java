@@ -53,7 +53,7 @@ public class ChangePasswordTest {
 
     @Test
     public void should_validate_oldPassword_size() throws Exception {
-        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
         PasswordChangeDto request = new PasswordChangeDto("asd", "janko123");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
@@ -62,7 +62,7 @@ public class ChangePasswordTest {
 
     @Test
     public void should_validate_newPassword_size() throws Exception {
-        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
         PasswordChangeDto request = new PasswordChangeDto("janko123", "123");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
@@ -77,7 +77,7 @@ public class ChangePasswordTest {
 
         PasswordChangeDto request = new PasswordChangeDto(oldPassword, newPassword);
 
-        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(null);
 
@@ -94,7 +94,7 @@ public class ChangePasswordTest {
 
         PasswordChangeDto request = new PasswordChangeDto(oldPassword, newPassword);
 
-        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
         UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword + "bad credential"), "email@kowalski.pl", UsersRoles.USER);
         foundUser.setId(1L);
@@ -112,7 +112,7 @@ public class ChangePasswordTest {
         final String newPassword = "janko1234";
         final String exampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjUwMjM3MjEsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc3YmQwYzJkLTViNGQtNGU0YS1hNmVjLTEyMjk4OWU5YTUwZCIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.C31mSjrCsinO-bKi_Ww6GoCSnbPmYyasTolkGp5Td-o";
 
-        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.FATAL_ERROR,
+        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR,
                 ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
         Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("ENCODED_PASSWORD");

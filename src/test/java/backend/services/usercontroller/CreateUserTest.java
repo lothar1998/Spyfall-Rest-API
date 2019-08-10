@@ -59,10 +59,10 @@ public class CreateUserTest {
 
     @Before
     public void expectedResponseSetup() {
-        this.responseValidationError = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+        this.responseValidationError = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         this.responseDatabaseError =
-                new ExceptionResponse(ExceptionResponse.ExceptionType.FATAL_ERROR, ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
-        this.responseUserAlreadyExistsError = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.ALREADY_EXISTS, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+                new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+        this.responseUserAlreadyExistsError = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.ALREADY_EXISTS, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
     }
 
     @Test

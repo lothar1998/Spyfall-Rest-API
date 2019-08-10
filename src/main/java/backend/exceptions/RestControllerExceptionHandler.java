@@ -16,17 +16,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  * @author Piotr Kuglin
  */
 @RestControllerAdvice
-public final class RestControllerExceptionHandler extends ResponseEntityExceptionHandler {
+public class RestControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {BadCredentialsException.class, UserHasNotBeenCreatedException.class})
-    private ResponseEntity handleBadRequestException(Exception exception, WebRequest request) {
-        ExceptionResponse bodyOfResponse = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, exception.getMessage(), ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+    public ResponseEntity handleBadRequestException(Exception exception, WebRequest request) {
+        ExceptionResponse bodyOfResponse = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, exception.getMessage(), ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(value = DatabaseException.class)
-    private ResponseEntity handleInternalServerErrorException(Exception exception, WebRequest request) {
-        ExceptionResponse bodyOfResponse = new ExceptionResponse(ExceptionResponse.ExceptionType.FATAL_ERROR, exception.getMessage(), ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity handleInternalServerErrorException(Exception exception, WebRequest request) {
+        ExceptionResponse bodyOfResponse = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, exception.getMessage(), ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
         return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 

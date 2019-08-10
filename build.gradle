@@ -37,6 +37,9 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     compileOnly 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '2.1.7.RELEASE'
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+
 
     runtimeOnly 'com.h2database:h2'
     /*---------*/

@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 public class UserCreationResponseDto extends Response {
 
-    UserEntity user;
+    private UserEntity user;
     private String message;
 
     public UserCreationResponseDto(MessageType type, String message, UserEntity user) {

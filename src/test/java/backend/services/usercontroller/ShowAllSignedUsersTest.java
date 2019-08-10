@@ -69,7 +69,7 @@ public class ShowAllSignedUsersTest {
 
     @Test
     public void should_return_database_error_caused_by_not_finding_any_user_in_database() throws Exception {
-        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.FATAL_ERROR,
+        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR,
                 ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
         Iterable<UserEntity> iterable = () -> new Iterator<UserEntity>() {
