@@ -13,7 +13,7 @@ import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.user.UserCreationResponseDto;
-import backend.services.UserController;
+import backend.services.UserService;
 import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Piotr Kuglin
  */
 @RunWith(SpringRunner.class)
-@WebMvcTest(UserController.class)
+@WebMvcTest(UserService.class)
 @ActiveProfiles(value = ProfileTypes.DEVELOPMENT_PROFILE)
 public class CreateUserTest {
 

@@ -37,13 +37,13 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping(ContextPaths.USER_MAIN_CONTEXT)
-public class UserController {
+public class UserService {
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -123,7 +123,7 @@ public class UserController {
 
         Iterable<UserEntity> userList = userRepository.findAll();
 
-        if (userList == null)
+        if (!userList.iterator().hasNext())
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
         userList.forEach(user -> {

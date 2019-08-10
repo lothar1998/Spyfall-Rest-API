@@ -11,7 +11,7 @@ import backend.exceptions.ExceptionMessages;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.models.response.user.UserListResponseDto;
-import backend.services.UserController;
+import backend.services.UserService;
 import com.google.gson.Gson;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -38,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Piotr Kuglin
  */
 @RunWith(SpringRunner.class)
-@WebMvcTest(UserController.class)
+@WebMvcTest(UserService.class)
 @ActiveProfiles(value = ProfileTypes.DEVELOPMENT_PROFILE)
 public class ShowAllSignedUsersTest {
 
@@ -59,13 +60,10 @@ public class ShowAllSignedUsersTest {
 
         Mockito.when(userRepository.findAll()).thenReturn(userList);
 
-        userList.forEach(userEntity -> {
-            userEntity.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
-        });
+        userList.forEach(userEntity -> userEntity.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT));
 
         UserListResponseDto response = new UserListResponseDto(Response.MessageType.STATUS, userList);
-
-
+        
         mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isOk());
     }
 
@@ -74,7 +72,19 @@ public class ShowAllSignedUsersTest {
         ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.FATAL_ERROR,
                 ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
-        Mockito.when(userRepository.findAll()).thenReturn(null);
+        Iterable<UserEntity> iterable = () -> new Iterator<UserEntity>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public UserEntity next() {
+                return null;
+            }
+        };
+
+        Mockito.when(userRepository.findAll()).thenReturn(iterable);
 
         mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isInternalServerError());
     }
