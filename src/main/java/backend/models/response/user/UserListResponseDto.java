@@ -21,8 +21,8 @@ public class UserListResponseDto extends Response {
 
     private List<UserEntity> signedUsers;
 
-    public UserListResponseDto(MessageType type, List<UserEntity> users) {
-        super(type);
+    public UserListResponseDto(MessageType type, String message, List<UserEntity> users) {
+        super(type, message);
         this.signedUsers = users;
     }
 }

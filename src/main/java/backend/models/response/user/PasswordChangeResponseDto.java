@@ -14,11 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PasswordChangeResponseDto extends Response {
-
-    private String message;
-
     public PasswordChangeResponseDto(MessageType type, String message) {
-        super(type);
-        this.message = message;
+        super(type, message);
     }
 }

@@ -1,6 +1,7 @@
 package backend.models.response;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -8,22 +9,16 @@ import org.springframework.http.HttpStatus;
  *
  * @author Piotr Kuglin
  */
-@Data
-public class ExceptionResponse {
+@Getter
+@Setter
+public class ExceptionResponse extends Response {
 
-    private String type;
-    private String message;
     private String description;
     private String status;
 
-    public ExceptionResponse(ExceptionType type, String message, String description, HttpStatus status) {
-        this.type = type.toString();
-        this.message = message;
+    public ExceptionResponse(Response.MessageType type, String message, String description, HttpStatus status) {
+        super(type, message);
         this.description = description;
         this.status = status.toString();
-    }
-
-    public enum ExceptionType {
-        ERROR, FATAL_ERROR, WARNING
     }
 }

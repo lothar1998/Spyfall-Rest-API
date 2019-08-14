@@ -59,10 +59,10 @@ public class CreateUserTest {
 
     @Before
     public void expectedResponseSetup() {
-        this.responseValidationError = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+        this.responseValidationError = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         this.responseDatabaseError =
-                new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR, ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
-        this.responseUserAlreadyExistsError = new ExceptionResponse(ExceptionResponse.ExceptionType.WARNING, ExceptionMessages.ALREADY_EXISTS, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+                new ExceptionResponse(Response.MessageType.ERROR, ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+        this.responseUserAlreadyExistsError = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.USER_ALREADY_EXISTS, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -176,7 +176,7 @@ public class CreateUserTest {
 
         UserCreationDto request = new backend.models.request.user.UserCreationDto(credentials, credentials, email);
 
-        UserCreationResponseDto response = new UserCreationResponseDto(Response.MessageType.MESSAGE, ResponseMessages.USER_HAS_BEEN_CREATED,
+        UserCreationResponseDto response = new UserCreationResponseDto(Response.MessageType.INFO, ResponseMessages.USER_HAS_BEEN_CREATED,
                 new UserEntity(credentials, StartupConfig.HASHED_PASSWORD_REPLACEMENT, email, UsersRoles.USER));
 
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)

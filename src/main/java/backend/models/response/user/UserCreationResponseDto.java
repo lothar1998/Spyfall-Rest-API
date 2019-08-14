@@ -20,11 +20,9 @@ import lombok.Setter;
 public class UserCreationResponseDto extends Response {
 
     private UserEntity user;
-    private String message;
 
     public UserCreationResponseDto(MessageType type, String message, UserEntity user) {
-        super(type);
-        this.message = message;
+        super(type, message);
         this.user = user;
     }
 }

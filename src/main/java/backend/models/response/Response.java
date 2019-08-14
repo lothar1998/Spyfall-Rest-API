@@ -15,12 +15,13 @@ import lombok.NoArgsConstructor;
 public abstract class Response {
 
     protected MessageType type;
+    protected String message;
 
     /**
      * type of message
      */
     public enum MessageType {
-        MESSAGE, ERROR, STATUS
+        INFO, ERROR, WARNING, STATUS
     }
 
 }

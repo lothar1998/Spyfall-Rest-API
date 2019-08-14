@@ -10,6 +10,7 @@ import backend.exceptions.ExceptionDescriptions;
 import backend.exceptions.ExceptionMessages;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
+import backend.models.response.ResponseMessages;
 import backend.models.response.user.UserListResponseDto;
 import backend.services.UserService;
 import com.google.gson.Gson;
@@ -62,14 +63,14 @@ public class ShowAllSignedUsersTest {
 
         userList.forEach(userEntity -> userEntity.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT));
 
-        UserListResponseDto response = new UserListResponseDto(Response.MessageType.STATUS, userList);
+        UserListResponseDto response = new UserListResponseDto(Response.MessageType.STATUS, ResponseMessages.LIST_OF_USERS_SHOWN, userList);
         
         mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isOk());
     }
 
     @Test
     public void should_return_database_error_caused_by_not_finding_any_user_in_database() throws Exception {
-        ExceptionResponse response = new ExceptionResponse(ExceptionResponse.ExceptionType.ERROR,
+        ExceptionResponse response = new ExceptionResponse(Response.MessageType.ERROR,
                 ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
         Iterable<UserEntity> iterable = () -> new Iterator<UserEntity>() {
