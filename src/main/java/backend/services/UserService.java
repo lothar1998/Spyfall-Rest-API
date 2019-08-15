@@ -61,7 +61,7 @@ public class UserService {
         if (errors.hasErrors())
             throw new BadCredentialsException(ExceptionMessages.VALIDATION_ERROR);
 
-        if (userRepository.findUserByUsername(user.getUsername()) != null)
+        if ((userRepository.findUserByUsername(user.getUsername()) != null) || (userRepository.findUserByEmail(user.getEmail()) != null))
             throw new BadCredentialsException(ExceptionMessages.USER_ALREADY_EXISTS);
 
         UserEntity userToSave = new UserEntity(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getEmail(), UsersRoles.USER);

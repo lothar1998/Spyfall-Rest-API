@@ -141,7 +141,7 @@ public class CreateUserTest {
     }
 
     @Test
-    public void createUser_should_occur_user_already_exist_response() throws Exception {
+    public void createUser_should_occur_user_already_exist_response_caused_the_same_username() throws Exception {
 
         String credentials = "janko123";
         String email = "jan@kowalski.pl";
@@ -156,6 +156,29 @@ public class CreateUserTest {
         savedUser.setId(1L);
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(savedUser);
+
+        UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "jan@kowalski.pl");
+
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
+                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseUserAlreadyExistsError)));
+    }
+
+    @Test
+    public void createUser_should_occur_user_already_exist_response_caused_the_same_email() throws Exception {
+
+        String credentials = "janko123";
+        String email = "jan@kowalski.pl";
+
+        Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("encoded");
+        Mockito.when(userRepository.save(Mockito.any(UserEntity.class))).thenAnswer((Answer<UserEntity>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return (UserEntity) args[0];
+        });
+
+        UserEntity savedUser = new UserEntity(credentials, credentials, email, UsersRoles.USER);
+        savedUser.setId(1L);
+
+        Mockito.when(userRepository.findUserByEmail(Mockito.anyString())).thenReturn(savedUser);
 
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "jan@kowalski.pl");
 
