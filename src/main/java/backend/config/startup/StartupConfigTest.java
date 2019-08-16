@@ -18,8 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @author Piotr Kuglin
  */
 @Configuration
-@Profile(ProfileTypes.DEVELOPMENT_PROFILE)
-public class StartupConfigDevelopment {
+@Profile(ProfileTypes.TEST_PROFILE)
+public class StartupConfigTest {
 
     private PasswordEncoder encoder;
     private UserRepository repository;
@@ -35,7 +35,7 @@ public class StartupConfigDevelopment {
     private String adminEmail;
 
     @Autowired
-    public StartupConfigDevelopment(PasswordEncoder encoder, UserRepository repository) {
+    public StartupConfigTest(PasswordEncoder encoder, UserRepository repository) {
         this.encoder=encoder;
         this.repository=repository;
     }

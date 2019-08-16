@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(UserService.class)
-@ActiveProfiles(value = ProfileTypes.DEVELOPMENT_PROFILE)
+@ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
 public class CreateUserTest {
 
     private static Gson gson = new Gson();

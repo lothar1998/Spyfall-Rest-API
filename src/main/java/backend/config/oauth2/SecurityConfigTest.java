@@ -16,8 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @author Piotr Kuglin
  */
 @Configuration
-@Profile(ProfileTypes.DEVELOPMENT_PROFILE)
-public class SecurityConfigDevelopment extends WebSecurityConfigurerAdapter {
+@Profile(ProfileTypes.TEST_PROFILE)
+public class SecurityConfigTest extends WebSecurityConfigurerAdapter {
 
     @Bean
     public PasswordEncoder encoder() {

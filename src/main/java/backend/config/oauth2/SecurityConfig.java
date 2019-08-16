@@ -22,7 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
-@Profile(ProfileTypes.PRODUCTION_PROFILE)
+@Profile({ProfileTypes.PRODUCTION_PROFILE, ProfileTypes.DEVELOPMENT_PROFILE})
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private CustomDetailsService customDetailsService;
