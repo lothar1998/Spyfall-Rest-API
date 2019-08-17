@@ -1,0 +1,19 @@
+version: '3'
+services:
+  postgres:
+    container_name: "postgres"
+    image: postgres:11
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "10000:5432"
+    volumes:
+      - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+  x_api:
+    container_name: "x_api"
+    build: ./
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres
