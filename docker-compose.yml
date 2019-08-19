@@ -15,5 +15,11 @@ services:
     build: ./
     ports:
       - "9090:9090"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres/x_data
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=password
+      - X_PROFILE=prod
+      #set custom environment variables from X-Server App Dockerfile here
     depends_on:
       - postgres
