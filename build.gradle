@@ -40,7 +40,6 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '2.1.7.RELEASE'
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
-    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
-    runtimeOnly 'com.h2database:h2'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-mongodb', version: '2.1.7.RELEASE'
     /*---------*/
 }

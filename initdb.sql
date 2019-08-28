@@ -1,1 +1,0 @@
-CREATE DATABASE x_data;

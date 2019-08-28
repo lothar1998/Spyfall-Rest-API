@@ -1,25 +1,34 @@
-version: '3'
+version: '3.7'
+networks:
+  x_network:
+    ipam:
+      driver: default
 services:
-  postgres:
-    container_name: "postgres"
-    image: postgres:11
+  x_mongo:
+    container_name: "x_mongo"
+    image: mongo:4.2.0
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: x_data
     ports:
-      - "10000:5432"
+      - "27017:27017"
+    networks:
+      x_network:
     volumes:
-      - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+      - ./initmongo.js:/docker-entrypoint-initdb.d/initmongno.js
   x_api:
     container_name: "x_api"
     build: ./
     ports:
       - "9090:9090"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres/x_data
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=password
-      - X_PROFILE=prod
+      - MONGODB_DATABASE=x_data
+      - MONGODB_HOST=x_mongo
+      - MONGODB_USERNAME=admin
+      - MONGODB_PASSWORD=password
       #set custom environment variables from X-Server App Dockerfile here
+    networks:
+      x_network:
     depends_on:
-      - postgres
+      - x_mongo

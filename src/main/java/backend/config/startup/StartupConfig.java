@@ -28,7 +28,7 @@ import org.springframework.web.client.ResponseErrorHandler;
 @EnableAuthorizationServer
 @EnableResourceServer
 @Configuration
-@Profile({ProfileTypes.PRODUCTION_PROFILE, ProfileTypes.DEVELOPMENT_PROFILE})
+@Profile(ProfileTypes.PRODUCTION_PROFILE)
 public class StartupConfig {
 
     public static final int PASSWORD_MIN_LENGTH = 8;

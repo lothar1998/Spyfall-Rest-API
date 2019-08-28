@@ -5,8 +5,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.persistence.*;
+import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -17,8 +19,7 @@ import javax.validation.constraints.Size;
  *
  * @author Piotr Kuglin
  */
-@Entity
-@Table(name = "users")
+@Document(value = "users")
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -26,28 +27,27 @@ import javax.validation.constraints.Size;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private String id;
 
-    @Column(name = "username")
+    @Field(value = "username")
     @NotNull
     @NotBlank
     @Size(min = StartupConfig.USERNAME_MIN_LENGTH)
     private String username;
 
-    @Column(name = "password")
+    @Field(value = "password")
     @NotNull
     @NotBlank
     @Size(min = StartupConfig.PASSWORD_MIN_LENGTH)
     private String password;
 
-    @Column(name = "email")
+    @Field(value = "email")
     @NotNull
     @NotBlank
     @Pattern(regexp = "[a-zA-Z0-9-_.]+@[a-z0-9-.]+.[a-z0-9]{1,4}")
     private String email;
 
-    @Column(name = "authority")
+    @Field(value = "authority")
     @NotNull
     @NotBlank
     private String authority;
