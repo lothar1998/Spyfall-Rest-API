@@ -73,19 +73,24 @@ public class ShowAllSignedUsersTest {
         ExceptionResponse response = new ExceptionResponse(Response.MessageType.ERROR,
                 ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
-        Iterable<UserEntity> iterable = () -> new Iterator<UserEntity>() {
+        List<UserEntity> iterableList = new ArrayList<UserEntity>() {
             @Override
-            public boolean hasNext() {
-                return false;
-            }
+            public Iterator<UserEntity> iterator() {
+                return new Iterator<UserEntity>() {
+                    @Override
+                    public boolean hasNext() {
+                        return false;
+                    }
 
-            @Override
-            public UserEntity next() {
-                return null;
+                    @Override
+                    public UserEntity next() {
+                        return null;
+                    }
+                };
             }
         };
 
-        Mockito.when(userRepository.findAll()).thenReturn(iterable);
+        Mockito.when(userRepository.findAll()).thenReturn(iterableList);
 
         mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isInternalServerError());
     }

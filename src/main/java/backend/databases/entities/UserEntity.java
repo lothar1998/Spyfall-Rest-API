@@ -1,14 +1,12 @@
 package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -19,11 +17,9 @@ import javax.validation.constraints.Size;
  *
  * @author Piotr Kuglin
  */
-@Document(value = "users")
-@Getter
-@Setter
-@EqualsAndHashCode
+@Document(collection = "users")
 @NoArgsConstructor
+@Data
 public class UserEntity {
 
     @Id

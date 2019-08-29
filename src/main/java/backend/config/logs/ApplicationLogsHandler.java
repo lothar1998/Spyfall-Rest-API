@@ -1,5 +1,6 @@
 package backend.config.logs;
 
+import backend.config.ProfileTypes;
 import backend.models.response.Response;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -9,12 +10,14 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 
 @Aspect
 @Configuration
+@Profile(ProfileTypes.PRODUCTION_PROFILE)
 public class ApplicationLogsHandler {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

@@ -99,7 +99,7 @@ public class ChangePasswordTest {
         ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
         UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword + "bad credential"), "email@kowalski.pl", UsersRoles.USER);
-        foundUser.setId(1L);
+        foundUser.setId("507f1f77bcf86cd799439011");
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
 
@@ -121,7 +121,7 @@ public class ChangePasswordTest {
         Mockito.when(userRepository.save(Mockito.any())).thenReturn(null);
 
         UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER);
-        foundUser.setId(1L);
+        foundUser.setId("507f1f77bcf86cd799439011");
 
         PasswordChangeDto request = new PasswordChangeDto(oldPassword, newPassword);
 
@@ -151,7 +151,7 @@ public class ChangePasswordTest {
         });
 
         UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER);
-        foundUser.setId(1L);
+        foundUser.setId("507f1f77bcf86cd799439011");
 
         PasswordChangeDto request = new PasswordChangeDto(oldPassword, newPassword);
 

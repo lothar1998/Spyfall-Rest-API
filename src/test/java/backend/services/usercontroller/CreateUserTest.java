@@ -153,7 +153,7 @@ public class CreateUserTest {
         });
 
         UserEntity savedUser = new UserEntity(credentials, credentials, email, UsersRoles.USER);
-        savedUser.setId(1L);
+        savedUser.setId("507f1f77bcf86cd799439011");
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(savedUser);
 
@@ -176,7 +176,7 @@ public class CreateUserTest {
         });
 
         UserEntity savedUser = new UserEntity(credentials, credentials, email, UsersRoles.USER);
-        savedUser.setId(1L);
+        savedUser.setId("507f1f77bcf86cd799439011");
 
         Mockito.when(userRepository.findUserByEmail(Mockito.anyString())).thenReturn(savedUser);
 

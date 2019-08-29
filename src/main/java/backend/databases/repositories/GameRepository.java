@@ -1,6 +1,6 @@
 package backend.databases.repositories;
 
-import backend.databases.entities.Locations;
+import backend.databases.entities.GameEntity;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface LocationsRepository extends MongoRepository<Locations,String> {
-    List<Locations> findBy_id(ObjectId _id);
+public interface GameRepository extends MongoRepository<GameEntity, String> {
+    List<GameEntity> findById(ObjectId id);
 }
