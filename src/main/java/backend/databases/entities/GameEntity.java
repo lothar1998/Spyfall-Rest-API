@@ -2,6 +2,8 @@ package backend.databases.entities;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,6 +20,7 @@ import java.util.GregorianCalendar;
 
 @Document(collection = "games")
 @NoArgsConstructor
+@RequiredArgsConstructor
 @Data
 public class GameEntity {
 
@@ -28,19 +31,19 @@ public class GameEntity {
     @NotNull
     @NotBlank
     @DBRef(lazy = true)
-    private UserEntity hostId;
+    private @NonNull UserEntity hostId;
 
     @Field(value = "gameTime")
     @NotNull
-    private GregorianCalendar gameStart;
+    private @NonNull GregorianCalendar gameStart;
 
     @Field(value = "gameLocation")
     @NotNull
     @DBRef(lazy = true)
-    private LocationEntity location;
+    private @NonNull LocationEntity location;
 
     @Field(value = "palyerRole")
     @NotNull
     @DBRef(lazy = true)
-    private RoleEntity roles;
+    private @NonNull RoleEntity roles;
 }

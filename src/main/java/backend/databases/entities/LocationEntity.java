@@ -2,6 +2,8 @@ package backend.databases.entities;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,6 +15,7 @@ import java.util.List;
 
 @Document(collection = "locations")
 @NoArgsConstructor
+@RequiredArgsConstructor
 @Data
 public class LocationEntity {
 
@@ -21,19 +24,21 @@ public class LocationEntity {
 
     @Field(value = "name")
     @NotNull
-    private String name;
+    private @NonNull String name;
 
     @Field(value = "owner")
     @NotNull
     @DBRef(lazy = true)
-    private UserEntity owner;
+    private @NonNull UserEntity owner;
 
     @Field(value = "description")
-    private String description;
+    private @NonNull String description;
 
     @Field(value = "lastModified")
-    private GregorianCalendar date;
+    private @NonNull GregorianCalendar date;
 
+    @Field(value = "role")
+    @NotNull
     @DBRef(lazy = true)
-    private List<RoleEntity> roles;
+    private @NonNull List<RoleEntity> roles;
 }
