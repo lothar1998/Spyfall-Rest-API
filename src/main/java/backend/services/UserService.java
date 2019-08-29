@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 
@@ -64,7 +65,7 @@ public class UserService {
         if ((userRepository.findUserByUsername(user.getUsername()) != null) || (userRepository.findUserByEmail(user.getEmail()) != null))
             throw new BadCredentialsException(ExceptionMessages.USER_ALREADY_EXISTS);
 
-        UserEntity userToSave = new UserEntity(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getEmail(), UsersRoles.USER);
+        UserEntity userToSave = new UserEntity(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getEmail(), UsersRoles.USER, true, Calendar.getInstance().getTime(), null);
 
         UserEntity savedUser = userRepository.save(userToSave);
 

@@ -1,8 +1,10 @@
 package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -11,15 +13,18 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.Date;
 
 /**
  * user entity
  *
  * @author Piotr Kuglin
  */
-@Document(collection = "users")
+@Document(value = "users")
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
-@Data
 public class UserEntity {
 
     @Id
@@ -48,14 +53,29 @@ public class UserEntity {
     @NotBlank
     private String authority;
 
+    @Field(value = "enabled")
+    private boolean enabled;
+
+    @Field(value = "signedDate")
+    private Date signedDate;
+
+    @Field(value = "lastLogged")
+    private Date lastLogged;
+
     public UserEntity(@NotNull @NotBlank @Size(min = StartupConfig.USERNAME_MIN_LENGTH) String username,
                       @NotNull @NotBlank @Size(min = StartupConfig.PASSWORD_MIN_LENGTH) String password,
                       @NotNull @NotBlank @Pattern(regexp = "[a-zA-Z0-9-_.]+@[a-z0-9-.]+.[a-z0-9]{1,4}") String email,
-                      @NotNull @NotBlank String authority) {
+                      @NotNull @NotBlank String authority,
+                      boolean enabled,
+                      Date signedDate,
+                      Date lastLogged) {
 
         this.username = username;
         this.password = password;
         this.email = email;
         this.authority = authority;
+        this.enabled = enabled;
+        this.signedDate = signedDate;
+        this.lastLogged = lastLogged;
     }
 }

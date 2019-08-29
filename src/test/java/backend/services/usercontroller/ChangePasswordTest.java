@@ -98,7 +98,7 @@ public class ChangePasswordTest {
 
         ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
-        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword + "bad credential"), "email@kowalski.pl", UsersRoles.USER);
+        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword + "bad credential"), "email@kowalski.pl", UsersRoles.USER, true, null, null);
         foundUser.setId("507f1f77bcf86cd799439011");
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
@@ -120,12 +120,12 @@ public class ChangePasswordTest {
         Mockito.when(passwordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
         Mockito.when(userRepository.save(Mockito.any())).thenReturn(null);
 
-        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER);
+        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER, true, null, null);
         foundUser.setId("507f1f77bcf86cd799439011");
 
         PasswordChangeDto request = new PasswordChangeDto(oldPassword, newPassword);
 
-        UserEntity savedUser = new UserEntity(foundUser.getUsername(), foundUser.getPassword(), foundUser.getEmail(), foundUser.getAuthority());
+        UserEntity savedUser = new UserEntity(foundUser.getUsername(), foundUser.getPassword(), foundUser.getEmail(), foundUser.getAuthority(), foundUser.isEnabled(), foundUser.getSignedDate(), foundUser.getLastLogged());
         savedUser.setPassword("abc");
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
@@ -150,7 +150,7 @@ public class ChangePasswordTest {
             return (UserEntity) args[0];
         });
 
-        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER);
+        UserEntity foundUser = new UserEntity("janko123", passwordEncoder.encode(oldPassword), "email@kowalski.pl", UsersRoles.USER, true, null, null);
         foundUser.setId("507f1f77bcf86cd799439011");
 
         PasswordChangeDto request = new PasswordChangeDto(oldPassword, newPassword);

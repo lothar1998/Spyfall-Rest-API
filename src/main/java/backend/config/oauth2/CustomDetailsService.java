@@ -7,6 +7,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+
+
 /**
  * custom details service for user
  *
@@ -28,8 +31,11 @@ public class CustomDetailsService implements UserDetailsService {
 
         UserEntity user = userRepository.findUserByUsername(username);
 
-        if(user!=null)
+        if (user != null) {
+            user.setLastLogged(Calendar.getInstance().getTime());
+            userRepository.save(user);
             return new CustomUser(user);
+        }
         else
             throw new UsernameNotFoundException(username + "not found!");
 

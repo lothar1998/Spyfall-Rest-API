@@ -56,8 +56,8 @@ public class ShowAllSignedUsersTest {
     public void should_return_user_list() throws Exception {
 
         List<UserEntity> userList = new ArrayList<>();
-        userList.add(new UserEntity("testtest", "testpassword", "mail@mail.com", UsersRoles.USER));
-        userList.add(new UserEntity("admin", "adminadmin", "admin@admin.pl", UsersRoles.ADMIN));
+        userList.add(new UserEntity("testtest", "testpassword", "mail@mail.com", UsersRoles.USER, true, null, null));
+        userList.add(new UserEntity("admin", "adminadmin", "admin@admin.pl", UsersRoles.ADMIN, true, null, null));
 
         Mockito.when(userRepository.findAll()).thenReturn(userList);
 

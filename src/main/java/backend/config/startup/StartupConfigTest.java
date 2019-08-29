@@ -47,10 +47,10 @@ public class StartupConfigTest {
     CommandLineRunner init(){
         return args -> {
             if(repository.findUserByUsername(adminUserName)==null)
-                repository.save(new UserEntity(adminUserName, encoder.encode(adminPassword), adminEmail, UsersRoles.ADMIN));
+                repository.save(new UserEntity(adminUserName, encoder.encode(adminPassword), adminEmail, UsersRoles.ADMIN, true, null, null));
 
             final String credentials = "janko123";
-            repository.save(new UserEntity(credentials, encoder.encode(credentials), credentials, UsersRoles.USER));
+            repository.save(new UserEntity(credentials, encoder.encode(credentials), credentials, UsersRoles.USER, true, null, null));
         };
     }
 }

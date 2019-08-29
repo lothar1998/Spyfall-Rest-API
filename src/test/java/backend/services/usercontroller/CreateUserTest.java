@@ -131,7 +131,7 @@ public class CreateUserTest {
     @Test
     public void should_occur_database_error() throws Exception {
         Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("encoded");
-        Mockito.when(userRepository.save(Mockito.any(UserEntity.class))).thenReturn(new UserEntity("a", "b", "c", "d"));
+        Mockito.when(userRepository.save(Mockito.any(UserEntity.class))).thenReturn(new UserEntity("a", "b", "c", "d", true, null, null));
 
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "jan@kowalski.pl");
 
@@ -152,7 +152,7 @@ public class CreateUserTest {
             return (UserEntity) args[0];
         });
 
-        UserEntity savedUser = new UserEntity(credentials, credentials, email, UsersRoles.USER);
+        UserEntity savedUser = new UserEntity(credentials, credentials, email, UsersRoles.USER, true, null, null);
         savedUser.setId("507f1f77bcf86cd799439011");
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(savedUser);
@@ -175,7 +175,7 @@ public class CreateUserTest {
             return (UserEntity) args[0];
         });
 
-        UserEntity savedUser = new UserEntity(credentials, credentials, email, UsersRoles.USER);
+        UserEntity savedUser = new UserEntity(credentials, credentials, email, UsersRoles.USER, true, null, null);
         savedUser.setId("507f1f77bcf86cd799439011");
 
         Mockito.when(userRepository.findUserByEmail(Mockito.anyString())).thenReturn(savedUser);
@@ -200,7 +200,7 @@ public class CreateUserTest {
         UserCreationDto request = new backend.models.request.user.UserCreationDto(credentials, credentials, email);
 
         UserCreationResponseDto response = new UserCreationResponseDto(Response.MessageType.INFO, ResponseMessages.USER_HAS_BEEN_CREATED,
-                new UserEntity(credentials, StartupConfig.HASHED_PASSWORD_REPLACEMENT, email, UsersRoles.USER));
+                new UserEntity(credentials, StartupConfig.HASHED_PASSWORD_REPLACEMENT, email, UsersRoles.USER, true, null, null));
 
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(gson.toJson(request))).andExpect(status().isCreated())

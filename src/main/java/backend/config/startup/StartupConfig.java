@@ -19,6 +19,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.ResponseErrorHandler;
 
+import java.util.Calendar;
+
 /**
  * startup config for production profile
  *
@@ -56,7 +58,7 @@ public class StartupConfig {
     CommandLineRunner init() {
         return args -> {
             if (repository.findUserByUsername(adminUserName) == null)
-                repository.save(new UserEntity(adminUserName, encoder.encode(adminPassword), adminEmail, UsersRoles.ADMIN));
+                repository.save(new UserEntity(adminUserName, encoder.encode(adminPassword), adminEmail, UsersRoles.ADMIN, true, Calendar.getInstance().getTime(), null));
         };
     }
 
