@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.GregorianCalendar;
+import java.util.Date;
 
 /**
  * Game entity
@@ -35,7 +35,7 @@ public class GameEntity {
 
     @Field(value = "gameTime")
     @NotNull
-    private @NonNull GregorianCalendar gameStart;
+    private @NonNull Date gameStart;
 
     @Field(value = "gameLocation")
     @NotNull

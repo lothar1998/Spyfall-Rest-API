@@ -10,7 +10,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.NotNull;
-import java.util.GregorianCalendar;
+
+import java.util.Date;
+
 import java.util.List;
 
 @Document(collection = "locations")
@@ -35,7 +37,7 @@ public class LocationEntity {
     private @NonNull String description;
 
     @Field(value = "lastModified")
-    private @NonNull GregorianCalendar date;
+    private @NonNull Date date;
 
     @Field(value = "role")
     @NotNull
