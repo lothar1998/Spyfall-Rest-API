@@ -28,22 +28,21 @@ public class GameEntity {
     private String id;
 
     @Field(value = "host")
-    @NotNull
     @NotBlank
     @DBRef(lazy = true)
-    private @NonNull UserEntity hostId;
+    private @NonNull UserEntity host;
 
     @Field(value = "gameTime")
     @NotNull
     private @NonNull Date gameStart;
 
     @Field(value = "gameLocation")
-    @NotNull
+    @NotBlank
     @DBRef(lazy = true)
     private @NonNull LocationEntity location;
 
     @Field(value = "palyerRole")
-    @NotNull
+    @NotBlank
     @DBRef(lazy = true)
     private @NonNull RoleEntity roles;
 }

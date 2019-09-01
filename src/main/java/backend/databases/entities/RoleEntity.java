@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 /**
  * Role entity
@@ -23,12 +22,10 @@ public class RoleEntity {
     private String id;
 
     @Field(value = "roleName")
-    @NotNull
     @NotBlank
     private @NonNull String name;
 
     @Field(value = "description")
-    @NotNull
     @NotBlank
     private @NonNull String description;
 }

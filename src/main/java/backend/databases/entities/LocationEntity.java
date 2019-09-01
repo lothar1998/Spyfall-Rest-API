@@ -37,7 +37,7 @@ public class LocationEntity {
     private @NonNull String description;
 
     @Field(value = "lastModified")
-    private @NonNull Date date;
+    private @NonNull Date modificationDate;
 
     @Field(value = "role")
     @NotNull
