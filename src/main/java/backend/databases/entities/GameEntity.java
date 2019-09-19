@@ -41,7 +41,7 @@ public class GameEntity {
     @DBRef(lazy = true)
     private @NonNull LocationEntity location;
 
-    @Field(value = "palyerRole")
+    @Field(value = "playerRole")
     @NotBlank
     @DBRef(lazy = true)
     private @NonNull RoleEntity roles;

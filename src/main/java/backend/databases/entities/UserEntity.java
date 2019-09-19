@@ -58,4 +58,8 @@ public class UserEntity {
         this.email = email;
         this.authority = authority;
     }
+
+    public String getId() {
+        return id;
+    }
 }

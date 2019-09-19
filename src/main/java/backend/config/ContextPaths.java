@@ -1,7 +1,6 @@
 package backend.config;
 
 import backend.services.UserService;
-import backend.services.RoleService;
 import backend.services.GameService;
 
 /**
@@ -20,15 +19,6 @@ public class ContextPaths {
     public static final String USER_LOGOUT = "/logout";
     public static final String USER_CHANGE_PASSWORD = "/password";
     public static final String USER_GET_ALL_USERS = "/all";
-
-
-    /**
-     * Role Service context paths
-     * @see RoleService
-     */
-    public static final String ROLE_MAIN_CONTEXT = "/roles";
-    public static final String ROLE_CREATE = "/create";
-    public static final String ROLE_GET_ALL_ROLES = "/all";
 
 
     /**
