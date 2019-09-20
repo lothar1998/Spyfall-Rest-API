@@ -1,6 +1,7 @@
 package backend.config;
 
 import backend.services.UserService;
+import backend.services.GameService;
 
 /**
  * class which stores context paths to controllers
@@ -19,6 +20,11 @@ public class ContextPaths {
     public static final String USER_CHANGE_PASSWORD = "/password";
     public static final String USER_GET_ALL_USERS = "/all";
 
+
+    /**
+     * Game Service context paths
+     * @see GameService
+     */
     public static final String GAME_MAIN_CONTEXT = "/game";
     public static final String GAME_CREATE = "/create";
 

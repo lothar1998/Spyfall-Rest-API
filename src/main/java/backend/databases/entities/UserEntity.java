@@ -78,4 +78,8 @@ public class UserEntity {
         this.signedDate = signedDate;
         this.lastLogged = lastLogged;
     }
+
+    public String getId() {
+        return id;
+    }
 }
