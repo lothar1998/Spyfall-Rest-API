@@ -15,6 +15,11 @@ import java.util.Date;
 
 import java.util.List;
 
+/**
+ * locations entity
+ *
+ * @author Piotr Kuglin
+ */
 @Document(collection = "locations")
 @NoArgsConstructor
 @RequiredArgsConstructor
