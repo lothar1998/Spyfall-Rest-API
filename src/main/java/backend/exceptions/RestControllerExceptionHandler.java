@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.validation.ValidationException;
+
 /**
  * controller exceptions handlers
  *
@@ -22,7 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class RestControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @WarningLog
-    @ExceptionHandler(value = BadCredentialsException.class)
+    @ExceptionHandler(value = {BadCredentialsException.class, ValidationException.class})
     public ResponseEntity handleBadRequestException(Exception exception, WebRequest request) {
         ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.WARNING, exception.getMessage(), ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);

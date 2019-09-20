@@ -9,9 +9,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
@@ -45,7 +45,7 @@ public class UserEntity {
     @Field(value = "email")
     @NotNull
     @NotBlank
-    @Pattern(regexp = "[a-zA-Z0-9-_.]+@[a-z0-9-.]+.[a-z0-9]{1,4}")
+    @Email
     private String email;
 
     @Field(value = "authority")
@@ -64,7 +64,7 @@ public class UserEntity {
 
     public UserEntity(@NotNull @NotBlank @Size(min = StartupConfig.USERNAME_MIN_LENGTH) String username,
                       @NotNull @NotBlank @Size(min = StartupConfig.PASSWORD_MIN_LENGTH) String password,
-                      @NotNull @NotBlank @Pattern(regexp = "[a-zA-Z0-9-_.]+@[a-z0-9-.]+.[a-z0-9]{1,4}") String email,
+                      @NotNull @NotBlank @Email String email,
                       @NotNull @NotBlank String authority,
                       boolean enabled,
                       Date signedDate,

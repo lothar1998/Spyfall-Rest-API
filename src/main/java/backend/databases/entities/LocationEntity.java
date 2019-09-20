@@ -8,9 +8,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.NotNull;
-import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.List;
 
+/**
+ * location entity
+ *
+ * @author Piotr Kuglin
+ */
 @Document(collection = "locations")
 @NoArgsConstructor
 @Data
@@ -31,9 +36,17 @@ public class LocationEntity {
     @Field(value = "description")
     private String description;
 
-    @Field(value = "lastModified")
-    private GregorianCalendar date;
-
     @DBRef(lazy = true)
     private List<RoleEntity> roles;
+
+    @Field(value = "lastModified")
+    private Date date;
+
+    public LocationEntity(@NotNull String name, @NotNull UserEntity owner, String description, List<RoleEntity> roles, Date date) {
+        this.name = name;
+        this.owner = owner;
+        this.description = description;
+        this.roles = roles;
+        this.date = date;
+    }
 }
