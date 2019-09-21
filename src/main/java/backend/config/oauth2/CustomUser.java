@@ -15,7 +15,7 @@ class CustomUser extends User {
     private static final long serialVersionUID = 1L;
 
     CustomUser(UserEntity user) {
-        super(user.getUsername(), user.getPassword(), true, true, true, true,
+        super(user.getUsername(), user.getPassword(), user.isEnabled(), true, true, true,
                 Collections.singleton(new SimpleGrantedAuthority(user.getAuthority())));
     }
 }

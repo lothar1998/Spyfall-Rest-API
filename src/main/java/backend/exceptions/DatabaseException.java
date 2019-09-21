@@ -5,7 +5,7 @@ package backend.exceptions;
  *
  * @author Piotr Kuglin
  */
-public class DatabaseException extends RuntimeException {
+public class DatabaseException extends Exception {
     public DatabaseException(String message) {
         super(message);
     }

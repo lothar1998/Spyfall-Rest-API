@@ -20,6 +20,12 @@ public class ContextPaths {
     public static final String USER_CHANGE_PASSWORD = "/password";
     public static final String USER_GET_ALL_USERS = "/all";
 
+    /**
+     * location controller paths
+     * @see LocationService
+     */
+    public static final String LOCATION_MAIN_CONTEXT = "/location";
+    public static final String LOCATION_CREATE = "/create";
 
     /**
      * Game Service context paths

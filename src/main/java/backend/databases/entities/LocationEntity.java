@@ -2,27 +2,22 @@ package backend.databases.entities;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.NotNull;
-
 import java.util.Date;
-
 import java.util.List;
 
 /**
- * locations entity
+ * location entity
  *
  * @author Piotr Kuglin
  */
 @Document(collection = "locations")
 @NoArgsConstructor
-@RequiredArgsConstructor
 @Data
 public class LocationEntity {
 
@@ -31,21 +26,27 @@ public class LocationEntity {
 
     @Field(value = "name")
     @NotNull
-    private @NonNull String name;
+    private String name;
 
     @Field(value = "owner")
     @NotNull
     @DBRef(lazy = true)
-    private @NonNull UserEntity owner;
+    private UserEntity owner;
 
     @Field(value = "description")
-    private @NonNull String description;
+    private String description;
+
+    @DBRef(lazy = true)
+    private List<RoleEntity> roles;
 
     @Field(value = "lastModified")
-    private @NonNull Date modificationDate;
+    private Date date;
 
-    @Field(value = "role")
-    @NotNull
-    @DBRef(lazy = true)
-    private @NonNull List<RoleEntity> roles;
+    public LocationEntity(@NotNull String name, @NotNull UserEntity owner, String description, List<RoleEntity> roles, Date date) {
+        this.name = name;
+        this.owner = owner;
+        this.description = description;
+        this.roles = roles;
+        this.date = date;
+    }
 }

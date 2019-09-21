@@ -35,6 +35,8 @@ public class StartupConfig {
 
     public static final int PASSWORD_MIN_LENGTH = 8;
     public static final int USERNAME_MIN_LENGTH = 5;
+    public static final int LOCATION_NAME_MIN_LENGTH = 5;
+    public static final int ROLE_NAME_MIN_LENGTH = 5;
     public static final String HASHED_PASSWORD_REPLACEMENT = "#HASHED#";
     private PasswordEncoder encoder;
     private UserRepository repository;

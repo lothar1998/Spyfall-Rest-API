@@ -1,4 +1,4 @@
-package backend.services.usercontroller;
+package backend.services.userservice;
 
 import backend.config.ContextPaths;
 import backend.config.ProfileTypes;

@@ -1,31 +1,33 @@
 package backend.databases.entities;
 
-import lombok.*;
+import backend.config.startup.StartupConfig;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.NotBlank;
-
-/**
- * Role entity
- * @author Kamil Kaliś
- */
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Document(collection = "roles")
 @NoArgsConstructor
-@RequiredArgsConstructor
 @Data
 public class RoleEntity {
 
     @Id
     private String id;
 
-    @Field(value = "roleName")
-    @NotBlank
-    private @NonNull String name;
+    @NotNull
+    @DBRef(lazy = true)
+    private UserEntity owner;
 
-    @Field(value = "description")
+    @NotNull
     @NotBlank
-    private @NonNull String description;
+    @Size(min = StartupConfig.ROLE_NAME_MIN_LENGTH)
+    private String name;
+
+    @NotNull
+    private String description;
 }

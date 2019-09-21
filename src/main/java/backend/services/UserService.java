@@ -14,7 +14,7 @@ import backend.models.response.ResponseMessages;
 import backend.models.response.user.PasswordChangeResponseDto;
 import backend.models.response.user.UserCreationResponseDto;
 import backend.models.response.user.UserListResponseDto;
-import backend.parsers.JWTParser;
+import backend.parsers.UserNameParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -55,10 +55,11 @@ public class UserService {
      * @param user user's credentials
      * @param errors occurs errors
      * @return query response
+     * @throws DatabaseException occurs when database returns incorrect responses
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.USER_CREATE)
-    public ResponseEntity createUser(@Valid @RequestBody UserCreationDto user, Errors errors) {
+    public ResponseEntity createUser(@Valid @RequestBody UserCreationDto user, Errors errors) throws DatabaseException {
         if (errors.hasErrors())
             throw new BadCredentialsException(ExceptionMessages.VALIDATION_ERROR);
 
@@ -85,15 +86,15 @@ public class UserService {
      * @param errors occurs errors
      * @param header authorization header - JWT Token
      * @return query response
+     * @throws DatabaseException occurs when database returns incorrect responses
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.USER_CHANGE_PASSWORD)
-    public ResponseEntity changePassword(@Valid @RequestBody PasswordChangeDto request, Errors errors, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) {
+    public ResponseEntity changePassword(@Valid @RequestBody PasswordChangeDto request, Errors errors, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException {
         if (errors.hasErrors())
             throw new BadCredentialsException(ExceptionMessages.VALIDATION_ERROR);
 
-        String token = header.split(" ")[1];
-        String username = JWTParser.getContent(token).get("user_name").toString();
+        String username = UserNameParser.getUsername(header);
 
         UserEntity foundUser = userRepository.findUserByUsername(username);
 
@@ -116,10 +117,11 @@ public class UserService {
     /**
      * show all signed user lists
      * @return response for query
+     * @throws DatabaseException occurs when database returns incorrect responses
      */
     @Secured(UsersRoles.ADMIN)
     @GetMapping(ContextPaths.USER_GET_ALL_USERS)
-    public ResponseEntity showAllSignedUsers() {
+    public ResponseEntity showAllSignedUsers() throws DatabaseException {
         List<UserEntity> users = new ArrayList<>();
 
         Iterable<UserEntity> userList = userRepository.findAll();
