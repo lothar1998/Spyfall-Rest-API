@@ -1,6 +1,7 @@
 package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -11,6 +12,11 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+/**
+ * role entity
+ *
+ * @author Piotr Kuglin
+ */
 @Document(collection = "roles")
 @NoArgsConstructor
 @Data
@@ -21,6 +27,7 @@ public class RoleEntity {
 
     @NotNull
     @DBRef(lazy = true)
+    @JsonIgnore
     private UserEntity owner;
 
     @NotNull

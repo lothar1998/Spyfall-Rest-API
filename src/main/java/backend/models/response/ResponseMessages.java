@@ -12,6 +12,7 @@ public class ResponseMessages {
     public static final String LIST_OF_USERS_SHOWN = "current list of users";
 
     public static final String LOCATION_HAS_BEEN_CREATED = "location has been created";
+    public static final String LIST_OF_LOCATIONS_BY_USERNAME = "current list of all user locations";
 
     private ResponseMessages() {
     }

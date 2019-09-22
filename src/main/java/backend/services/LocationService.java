@@ -14,7 +14,8 @@ import backend.models.request.location.LocationCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.location.LocationCreationResponseDto;
-import backend.parsers.UserNameParser;
+import backend.models.response.location.LocationsListByUsernameResponseDto;
+import backend.parsers.UsernameParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -64,7 +65,7 @@ public class LocationService {
         if (errors.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
-        UserEntity owner = userRepository.findUserByUsername(UserNameParser.getUsername(header));
+        UserEntity owner = userRepository.findUserByUsername(UsernameParser.getUsername(header));
 
         if (owner == null)
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
@@ -88,4 +89,25 @@ public class LocationService {
         return ResponseEntity.status(HttpStatus.CREATED).body(new LocationCreationResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_HAS_BEEN_CREATED, savedLocation));
     }
 
+    /**
+     * get all locations assigned to user by username
+     *
+     * @param header authorization bearer token
+     * @return list of assigned locations to user
+     * @throws DatabaseException occur when owner is not found in database
+     */
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
+    @GetMapping(ContextPaths.LOCATION_GET_ALL_BY_USERNAME)
+    public ResponseEntity getAllLocationsByUsername(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException {
+        String username = UsernameParser.getUsername(header);
+
+        UserEntity user = userRepository.findUserByUsername(username);
+
+        if (user == null)
+            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+
+        List<LocationEntity> locationList = locationRepository.findByOwner(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new LocationsListByUsernameResponseDto(Response.MessageType.INFO, ResponseMessages.LIST_OF_LOCATIONS_BY_USERNAME, locationList));
+    }
 }

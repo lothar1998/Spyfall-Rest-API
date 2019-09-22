@@ -2,7 +2,6 @@ package backend.services;
 
 import backend.config.ContextPaths;
 import backend.config.oauth2.UsersRoles;
-import backend.config.startup.StartupConfig;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
 import backend.exceptions.DatabaseException;
@@ -14,7 +13,7 @@ import backend.models.response.ResponseMessages;
 import backend.models.response.user.PasswordChangeResponseDto;
 import backend.models.response.user.UserCreationResponseDto;
 import backend.models.response.user.UserListResponseDto;
-import backend.parsers.UserNameParser;
+import backend.parsers.UsernameParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -76,7 +75,6 @@ public class UserService {
         if (!savedUser.equals(userToSave))
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        savedUser.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
         return ResponseEntity.status(HttpStatus.CREATED).body(new UserCreationResponseDto(Response.MessageType.INFO, ResponseMessages.USER_HAS_BEEN_CREATED, savedUser));
     }
 
@@ -94,7 +92,7 @@ public class UserService {
         if (errors.hasErrors())
             throw new BadCredentialsException(ExceptionMessages.VALIDATION_ERROR);
 
-        String username = UserNameParser.getUsername(header);
+        String username = UsernameParser.getUsername(header);
 
         UserEntity foundUser = userRepository.findUserByUsername(username);
 
@@ -129,10 +127,7 @@ public class UserService {
         if (!userList.iterator().hasNext())
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        userList.forEach(user -> {
-            user.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
-            users.add(user);
-        });
+        userList.forEach(users::add);
 
         return ResponseEntity.status(HttpStatus.OK).body(new UserListResponseDto(Response.MessageType.STATUS, ResponseMessages.LIST_OF_USERS_SHOWN, users));
     }

@@ -11,7 +11,11 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
 
-
+/**
+ * location creation request pattern
+ *
+ * @author Piotr Kuglin
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

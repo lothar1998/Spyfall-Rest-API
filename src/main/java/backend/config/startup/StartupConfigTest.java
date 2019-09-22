@@ -24,9 +24,6 @@ public class StartupConfigTest {
     private PasswordEncoder encoder;
     private UserRepository repository;
 
-    public static final int PASSWORD_MIN_LENGTH = 8;
-    public static final int USERNAME_MIN_LENGTH = 5;
-
     @Value("${default.admin.username}")
     private String adminUserName;
     @Value("${default.admin.password}")

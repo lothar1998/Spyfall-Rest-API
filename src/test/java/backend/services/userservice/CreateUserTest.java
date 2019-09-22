@@ -3,7 +3,6 @@ package backend.services.userservice;
 import backend.config.ContextPaths;
 import backend.config.ProfileTypes;
 import backend.config.oauth2.UsersRoles;
-import backend.config.startup.StartupConfig;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
 import backend.exceptions.ExceptionDescriptions;
@@ -11,10 +10,8 @@ import backend.exceptions.ExceptionMessages;
 import backend.models.request.user.UserCreationDto;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
-import backend.models.response.ResponseMessages;
-import backend.models.response.user.UserCreationResponseDto;
 import backend.services.UserService;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
 public class CreateUserTest {
 
-    private static Gson gson = new Gson();
+    private static ObjectMapper objectMapper = new ObjectMapper();
     @MockBean
     private PasswordEncoder passwordEncoder;
     @MockBean
@@ -69,63 +66,63 @@ public class CreateUserTest {
     public void should_validate_request_null_username() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto(null, "janko123", "abc@abc.pl");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_blank_username() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("", "janko123", "abc@abc.pl");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_too_short_username() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("jank", "janko123", "abc@abc.pl");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_null_password() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", null, "abc@abc.pl");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_blank_password() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "", "abc@abc.pl");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_too_short_password() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko12", "abc@abc.pl");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_null_email() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", null);
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_blank_email() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
     public void should_validate_request_not_email_pattern() throws Exception {
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "jan@kro@.place");
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationError)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationError)));
     }
 
     @Test
@@ -135,9 +132,9 @@ public class CreateUserTest {
 
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "jan@kowalski.pl");
 
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().json(gson.toJson(responseDatabaseError)));
+                .andExpect(content().json(objectMapper.writeValueAsString(responseDatabaseError)));
     }
 
     @Test
@@ -159,8 +156,8 @@ public class CreateUserTest {
 
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "jan@kowalski.pl");
 
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseUserAlreadyExistsError)));
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseUserAlreadyExistsError)));
     }
 
     @Test
@@ -182,8 +179,8 @@ public class CreateUserTest {
 
         UserCreationDto request = new backend.models.request.user.UserCreationDto("janko123", "janko123", "jan@kowalski.pl");
 
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request)))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseUserAlreadyExistsError)));
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseUserAlreadyExistsError)));
     }
 
     @Test
@@ -199,11 +196,7 @@ public class CreateUserTest {
 
         UserCreationDto request = new backend.models.request.user.UserCreationDto(credentials, credentials, email);
 
-        UserCreationResponseDto response = new UserCreationResponseDto(Response.MessageType.INFO, ResponseMessages.USER_HAS_BEEN_CREATED,
-                new UserEntity(credentials, StartupConfig.HASHED_PASSWORD_REPLACEMENT, email, UsersRoles.USER, true, null, null));
-
         mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(gson.toJson(request))).andExpect(status().isCreated())
-                .andExpect(content().json(gson.toJson(response)));
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isCreated());
     }
 }

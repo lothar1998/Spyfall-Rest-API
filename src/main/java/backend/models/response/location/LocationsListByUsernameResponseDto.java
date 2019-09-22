@@ -7,8 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
- * create location response
+ * list all user's locations by username response
  *
  * @author Piotr Kuglin
  */
@@ -16,12 +18,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class LocationCreationResponseDto extends Response {
+public class LocationsListByUsernameResponseDto extends Response {
 
-    private LocationEntity location;
+    private List<LocationEntity> locations;
 
-    public LocationCreationResponseDto(MessageType type, String message, LocationEntity location) {
+    public LocationsListByUsernameResponseDto(MessageType type, String message, List<LocationEntity> locations) {
         super(type, message);
-        this.location = location;
+        this.locations = locations;
     }
 }

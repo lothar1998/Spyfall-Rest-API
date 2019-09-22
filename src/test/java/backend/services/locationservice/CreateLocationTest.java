@@ -15,7 +15,7 @@ import backend.models.request.location.LocationCreationDto;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.services.LocationService;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CreateLocationTest {
 
     private final static String exampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjUwMjM3MjEsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc3YmQwYzJkLTViNGQtNGU0YS1hNmVjLTEyMjk4OWU5YTUwZCIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.C31mSjrCsinO-bKi_Ww6GoCSnbPmYyasTolkGp5Td-o";
-    private static Gson gson = new Gson();
+    private static ObjectMapper objectMapper = new ObjectMapper();
     @MockBean
     private UserRepository userRepository;
     @MockBean
@@ -69,18 +69,18 @@ public class CreateLocationTest {
     public void should_validate_name_is_not_null() throws Exception {
         LocationCreationDto request = new LocationCreationDto(null, "test", Collections.singletonList(new RoleEntity()));
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationException)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationException)));
     }
 
     @Test
     public void should_validate_name_is_not_blank() throws Exception {
         LocationCreationDto request = new LocationCreationDto("", "test", Collections.singletonList(new RoleEntity()));
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationException)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationException)));
     }
 
     @Test
@@ -93,27 +93,27 @@ public class CreateLocationTest {
 
         LocationCreationDto request = new LocationCreationDto(stringBuilder.toString(), "test", Collections.singletonList(new RoleEntity()));
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationException)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationException)));
     }
 
     @Test
     public void should_validate_description_is_not_null() throws Exception {
         LocationCreationDto request = new LocationCreationDto("nameOfLocation", null, Collections.singletonList(new RoleEntity()));
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationException)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationException)));
     }
 
     @Test
     public void should_validate_roles_is_not_null() throws Exception {
         LocationCreationDto request = new LocationCreationDto("nameOfLocation", "test", null);
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(responseValidationException)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(responseValidationException)));
     }
 
     @Test
@@ -124,9 +124,9 @@ public class CreateLocationTest {
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(null);
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isInternalServerError()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isInternalServerError()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
@@ -137,9 +137,9 @@ public class CreateLocationTest {
 
         Mockito.when(locationRepository.save(Mockito.any())).thenReturn(null);
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isInternalServerError()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isInternalServerError()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
@@ -157,7 +157,7 @@ public class CreateLocationTest {
             return (LocationEntity) args[0];
         });
 
-        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_CREATE).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
                 .andExpect(status().isCreated());
     }

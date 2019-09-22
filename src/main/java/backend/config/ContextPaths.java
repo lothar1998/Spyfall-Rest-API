@@ -26,6 +26,7 @@ public class ContextPaths {
      */
     public static final String LOCATION_MAIN_CONTEXT = "/location";
     public static final String LOCATION_CREATE = "/create";
+    public static final String LOCATION_GET_ALL_BY_USERNAME = "/my_locations";
 
     /**
      * Game Service context paths
