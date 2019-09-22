@@ -11,6 +11,4 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends MongoRepository<LocationEntity, String> {
     List<LocationEntity> findByOwner(UserEntity owner);
-
-    List<LocationEntity> findByOwnerAndName(UserEntity owner, String name);
 }

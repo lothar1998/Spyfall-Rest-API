@@ -13,6 +13,7 @@ import backend.exceptions.ExceptionMessages;
 import backend.models.request.location.LocationCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
+import backend.models.response.location.LocationByIdResponseDto;
 import backend.models.response.location.LocationCreationResponseDto;
 import backend.models.response.location.LocationsListByUsernameResponseDto;
 import backend.parsers.UsernameParser;
@@ -29,6 +30,7 @@ import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * implementation of REST controller of location queries
@@ -109,5 +111,24 @@ public class LocationService {
         List<LocationEntity> locationList = locationRepository.findByOwner(user);
 
         return ResponseEntity.status(HttpStatus.OK).body(new LocationsListByUsernameResponseDto(Response.MessageType.INFO, ResponseMessages.LIST_OF_LOCATIONS_BY_USERNAME, locationList));
+    }
+
+    /**
+     * get location by location's ID
+     *
+     * @param id ID of location
+     * @return locations details
+     */
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
+    @GetMapping("/{id}")
+    public ResponseEntity getLocationById(@PathVariable String id) {
+        Optional<LocationEntity> locationOptional = locationRepository.findById(id);
+
+        LocationEntity location = null;
+
+        if (locationOptional.isPresent())
+            location = locationOptional.get();
+
+        return ResponseEntity.status(HttpStatus.OK).body(new LocationByIdResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_BY_ID, location));
     }
 }
