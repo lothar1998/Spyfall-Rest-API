@@ -10,11 +10,14 @@ import backend.databases.repositories.RoleRepository;
 import backend.databases.repositories.UserRepository;
 import backend.exceptions.DatabaseException;
 import backend.exceptions.ExceptionMessages;
+import backend.exceptions.NotFoundException;
+import backend.exceptions.PermissionDeniedException;
 import backend.models.request.location.LocationCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.location.LocationByIdResponseDto;
 import backend.models.response.location.LocationCreationResponseDto;
+import backend.models.response.location.LocationDeletionResponseDto;
 import backend.models.response.location.LocationsListByUsernameResponseDto;
 import backend.parsers.UsernameParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,14 +124,40 @@ public class LocationService {
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping("/{id}")
-    public ResponseEntity getLocationById(@PathVariable String id) {
+    public ResponseEntity getLocationById(@PathVariable String id) throws NotFoundException {
         Optional<LocationEntity> locationOptional = locationRepository.findById(id);
 
-        LocationEntity location = null;
+        if (!locationOptional.isPresent())
+            throw new NotFoundException(ExceptionMessages.LOCATION_NOT_FOUND);
 
-        if (locationOptional.isPresent())
-            location = locationOptional.get();
+        LocationEntity location = locationOptional.get();
 
         return ResponseEntity.status(HttpStatus.OK).body(new LocationByIdResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_BY_ID, location));
+    }
+
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteLocationById(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException, NotFoundException, PermissionDeniedException {
+        String username = UsernameParser.getUsername(header);
+
+        Optional<LocationEntity> locationOptional = locationRepository.findById(id);
+
+        if (!locationOptional.isPresent())
+            throw new NotFoundException(ExceptionMessages.LOCATION_NOT_FOUND);
+
+        LocationEntity location = locationOptional.get();
+
+        UserEntity user = userRepository.findUserByUsername(username);
+
+        if (user == null)
+            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+
+        if (!location.getOwner().equals(user))
+            throw new PermissionDeniedException(ExceptionMessages.DELETION_VALIDATION_ERROR);
+
+        roleRepository.deleteAll(location.getRoles());
+        locationRepository.delete(location);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new LocationDeletionResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_DELETION));
     }
 }

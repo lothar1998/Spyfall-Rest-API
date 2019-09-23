@@ -23,11 +23,24 @@ import javax.validation.ValidationException;
 @RestControllerAdvice
 public class RestControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(value = NotFoundException.class)
+    public ResponseEntity handleNotFoundException(Exception exception, WebRequest request) {
+        ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.WARNING, exception.getMessage(), ExceptionDescriptions.NOT_FOUND, HttpStatus.NOT_FOUND);
+        return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
     @WarningLog
     @ExceptionHandler(value = {BadCredentialsException.class, ValidationException.class})
     public ResponseEntity handleBadRequestException(Exception exception, WebRequest request) {
         ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.WARNING, exception.getMessage(), ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @WarningLog
+    @ExceptionHandler(value = PermissionDeniedException.class)
+    public ResponseEntity handlePermissionDeniedException(Exception exception, WebRequest request) {
+        ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.ERROR, exception.getMessage(), ExceptionDescriptions.PERMISSION_DENIED, HttpStatus.FORBIDDEN);
+        return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     @ErrorLog
