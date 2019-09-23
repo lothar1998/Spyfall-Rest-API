@@ -135,6 +135,16 @@ public class LocationService {
         return ResponseEntity.status(HttpStatus.OK).body(new LocationByIdResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_BY_ID, location));
     }
 
+    /**
+     * delete location with corresponding roles by ID
+     *
+     * @param id     ID of location
+     * @param header authorization JWT Token
+     * @return info - successfully deleted location
+     * @throws DatabaseException         occurs if there is no such user in database
+     * @throws NotFoundException         occurs if location id is not valid
+     * @throws PermissionDeniedException occurs if user has no permission to delete this location
+     */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @DeleteMapping("/{id}")
     public ResponseEntity deleteLocationById(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException, NotFoundException, PermissionDeniedException {

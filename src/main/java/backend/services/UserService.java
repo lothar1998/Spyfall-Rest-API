@@ -109,7 +109,7 @@ public class UserService {
         if (!savedUser.equals(foundUser))
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        return ResponseEntity.status(HttpStatus.OK).body(new PasswordChangeResponseDto(Response.MessageType.INFO, ResponseMessages.PASSWORD_HAS_BEEN_CHANGED));
+        return ResponseEntity.status(HttpStatus.OK).body(new PasswordChangeResponseDto(Response.MessageType.INFO, ResponseMessages.PASS_HAS_BEEN_CHANGED));
     }
 
     /**
