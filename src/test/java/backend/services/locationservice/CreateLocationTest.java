@@ -14,6 +14,9 @@ import backend.exceptions.ExceptionMessages;
 import backend.models.request.location.LocationCreationDto;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
+import backend.parsers.JwtDecoder;
+import backend.parsers.Parser;
+import backend.parsers.UsernameParser;
 import backend.services.LocationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -56,9 +59,12 @@ public class CreateLocationTest {
     private LocationRepository locationRepository;
     @MockBean
     private RoleRepository roleRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
     private ExceptionResponse responseValidationException;
+    private Parser<String> usernameParser = new UsernameParser(new JwtDecoder());
 
     @Before
     public void setUp() {
@@ -151,6 +157,10 @@ public class CreateLocationTest {
 
         userEntity.setId("507f1f77bcf86cd799439011");
 
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(userEntity);
         Mockito.when(locationRepository.save(Mockito.any())).thenAnswer((Answer<LocationEntity>) invocation -> {
             Object[] args = invocation.getArguments();

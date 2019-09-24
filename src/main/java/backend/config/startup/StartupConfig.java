@@ -4,6 +4,9 @@ import backend.config.ProfileTypes;
 import backend.config.oauth2.UsersRoles;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
+import backend.parsers.JwtDecoder;
+import backend.parsers.Parser;
+import backend.parsers.UsernameParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -72,5 +75,10 @@ public class StartupConfig {
                 return false;
             }
         };
+    }
+
+    @Bean
+    public Parser<String> usernameParser() {
+        return new UsernameParser(new JwtDecoder());
     }
 }

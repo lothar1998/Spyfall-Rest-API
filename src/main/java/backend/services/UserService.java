@@ -13,8 +13,7 @@ import backend.models.response.ResponseMessages;
 import backend.models.response.user.PasswordChangeResponseDto;
 import backend.models.response.user.UserCreationResponseDto;
 import backend.models.response.user.UserListResponseDto;
-import backend.parsers.UsernameParser;
-import org.springframework.beans.factory.annotation.Autowired;
+import backend.parsers.Parser;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,13 +40,13 @@ public class UserService {
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private Parser<String> parser;
 
-    @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, Parser<String> parser) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.parser = parser;
     }
-
 
     /**
      * create user with given request
@@ -92,7 +91,7 @@ public class UserService {
         if (errors.hasErrors())
             throw new BadCredentialsException(ExceptionMessages.VALIDATION_ERROR);
 
-        String username = UsernameParser.getUsername(header);
+        String username = parser.parse(header);
 
         UserEntity foundUser = userRepository.findUserByUsername(username);
 

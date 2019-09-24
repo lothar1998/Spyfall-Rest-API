@@ -11,11 +11,15 @@ import backend.exceptions.ExceptionDescriptions;
 import backend.exceptions.ExceptionMessages;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
+import backend.parsers.JwtDecoder;
+import backend.parsers.Parser;
+import backend.parsers.UsernameParser;
 import backend.services.LocationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -47,8 +51,12 @@ public class GetAllLocationsByUsernameTest {
     private LocationRepository locationRepository;
     @MockBean
     private RoleRepository roleRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
+
+    private Parser<String> usernameParser = new UsernameParser(new JwtDecoder());
 
     @Test
     public void should_occur_error_caused_by_owner_not_found() throws Exception {
@@ -66,6 +74,10 @@ public class GetAllLocationsByUsernameTest {
 
         UserEntity owner = new UserEntity("janko123", "janko123", "mail@mail.com", UsersRoles.USER, true, null, null);
 
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(owner);
 
         mockMvc.perform(get(ContextPaths.LOCATION_MAIN_CONTEXT + ContextPaths.LOCATION_GET_ALL_BY_USERNAME).header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))

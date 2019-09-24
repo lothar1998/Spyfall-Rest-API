@@ -10,6 +10,7 @@ import backend.exceptions.ExceptionMessages;
 import backend.models.request.user.UserCreationDto;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
+import backend.parsers.Parser;
 import backend.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -46,6 +47,8 @@ public class CreateUserTest {
     private PasswordEncoder passwordEncoder;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
 

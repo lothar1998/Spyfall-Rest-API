@@ -10,6 +10,7 @@ import backend.exceptions.ExceptionDescriptions;
 import backend.exceptions.ExceptionMessages;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
+import backend.parsers.Parser;
 import backend.services.LocationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -48,6 +49,8 @@ public class GetLocationByIdTest {
     private LocationRepository locationRepository;
     @MockBean
     private RoleRepository roleRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
 

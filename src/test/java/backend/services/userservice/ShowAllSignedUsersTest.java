@@ -11,6 +11,7 @@ import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.user.UserListResponseDto;
+import backend.parsers.Parser;
 import backend.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -48,6 +49,8 @@ public class ShowAllSignedUsersTest {
     private PasswordEncoder passwordEncoder;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
 

@@ -14,11 +14,15 @@ import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.location.LocationDeletionResponseDto;
+import backend.parsers.JwtDecoder;
+import backend.parsers.Parser;
+import backend.parsers.UsernameParser;
 import backend.services.LocationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -52,8 +56,12 @@ public class DeleteLocationByIdTest {
     private LocationRepository locationRepository;
     @MockBean
     private RoleRepository roleRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
+
+    private Parser<String> usernameParser = new UsernameParser(new JwtDecoder());
 
     @Test
     public void should_occur_not_found_exception_caused_by_wrong_id() throws Exception {
@@ -84,6 +92,10 @@ public class DeleteLocationByIdTest {
         user.setId("5d87c214857aba0001625aaa");
         LocationEntity location = new LocationEntity("testname", user, "testdescription", null, null);
 
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
         Mockito.when(locationRepository.findById(Mockito.anyString())).thenReturn(Optional.of(location));
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(new UserEntity());
 
@@ -99,6 +111,10 @@ public class DeleteLocationByIdTest {
         user.setId("5d87c214857aba0001625aaa");
         LocationEntity location = new LocationEntity("testname", user, "testdescription", null, null);
 
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
         Mockito.when(locationRepository.findById(Mockito.anyString())).thenReturn(Optional.of(location));
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(user);
 

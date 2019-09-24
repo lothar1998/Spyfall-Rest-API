@@ -19,8 +19,7 @@ import backend.models.response.location.LocationByIdResponseDto;
 import backend.models.response.location.LocationCreationResponseDto;
 import backend.models.response.location.LocationDeletionResponseDto;
 import backend.models.response.location.LocationsListByUsernameResponseDto;
-import backend.parsers.UsernameParser;
-import org.springframework.beans.factory.annotation.Autowired;
+import backend.parsers.Parser;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,12 +46,13 @@ public class LocationService {
     private LocationRepository locationRepository;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
+    private Parser<String> parser;
 
-    @Autowired
-    public LocationService(LocationRepository locationRepository, UserRepository userRepository, RoleRepository roleRepository) {
+    public LocationService(LocationRepository locationRepository, UserRepository userRepository, RoleRepository roleRepository, Parser<String> parser) {
         this.locationRepository = locationRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.parser = parser;
     }
 
     /**
@@ -70,7 +70,7 @@ public class LocationService {
         if (errors.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
-        UserEntity owner = userRepository.findUserByUsername(UsernameParser.getUsername(header));
+        UserEntity owner = userRepository.findUserByUsername(parser.parse(header));
 
         if (owner == null)
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
@@ -104,7 +104,7 @@ public class LocationService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.LOCATION_GET_ALL_BY_USERNAME)
     public ResponseEntity getAllLocationsByUsername(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException {
-        String username = UsernameParser.getUsername(header);
+        String username = parser.parse(header);
 
         UserEntity user = userRepository.findUserByUsername(username);
 
@@ -148,7 +148,7 @@ public class LocationService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @DeleteMapping("/{id}")
     public ResponseEntity deleteLocationById(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException, NotFoundException, PermissionDeniedException {
-        String username = UsernameParser.getUsername(header);
+        String username = parser.parse(header);
 
         Optional<LocationEntity> locationOptional = locationRepository.findById(id);
 
