@@ -12,14 +12,14 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
- * location creation request pattern
+ * location creation and edition request pattern
  *
  * @author Piotr Kuglin
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class LocationCreationDto {
+public class LocationSchemaDto {
 
     @NotNull
     @NotBlank

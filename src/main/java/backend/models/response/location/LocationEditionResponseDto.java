@@ -16,11 +16,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class LocationCreationResponseDto extends Response {
+public class LocationEditionResponseDto extends Response {
 
     private LocationEntity location;
 
-    public LocationCreationResponseDto(MessageType type, String message, LocationEntity location) {
+    public LocationEditionResponseDto(MessageType type, String message, LocationEntity location) {
         super(type, message);
         this.location = location;
     }

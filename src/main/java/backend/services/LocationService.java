@@ -12,12 +12,12 @@ import backend.exceptions.DatabaseException;
 import backend.exceptions.ExceptionMessages;
 import backend.exceptions.NotFoundException;
 import backend.exceptions.PermissionDeniedException;
-import backend.models.request.location.LocationCreationDto;
+import backend.models.request.location.LocationSchemaDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.location.LocationByIdResponseDto;
-import backend.models.response.location.LocationCreationResponseDto;
 import backend.models.response.location.LocationDeletionResponseDto;
+import backend.models.response.location.LocationEditionResponseDto;
 import backend.models.response.location.LocationsListByUsernameResponseDto;
 import backend.parsers.Parser;
 import org.springframework.http.HttpHeaders;
@@ -66,14 +66,11 @@ public class LocationService {
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.LOCATION_CREATE)
-    public ResponseEntity createLocation(@Valid @RequestBody LocationCreationDto location, Errors errors, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException {
+    public ResponseEntity createLocation(@Valid @RequestBody LocationSchemaDto location, Errors errors, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException {
         if (errors.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
-        UserEntity owner = userRepository.findUserByUsername(parser.parse(header));
-
-        if (owner == null)
-            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+        UserEntity owner = checkUserCorrectness(header);
 
         List<RoleEntity> savedRoles = new ArrayList<>();
 
@@ -91,7 +88,7 @@ public class LocationService {
         if (!savedLocation.equals(locationToSave))
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new LocationCreationResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_HAS_BEEN_CREATED, savedLocation));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new LocationEditionResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_HAS_BEEN_CREATED, savedLocation));
     }
 
     /**
@@ -104,12 +101,7 @@ public class LocationService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.LOCATION_GET_ALL_BY_USERNAME)
     public ResponseEntity getAllLocationsByUsername(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException {
-        String username = parser.parse(header);
-
-        UserEntity user = userRepository.findUserByUsername(username);
-
-        if (user == null)
-            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+        UserEntity user = checkUserCorrectness(header);
 
         List<LocationEntity> locationList = locationRepository.findByOwner(user);
 
@@ -125,12 +117,7 @@ public class LocationService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping("/{id}")
     public ResponseEntity getLocationById(@PathVariable String id) throws NotFoundException {
-        Optional<LocationEntity> locationOptional = locationRepository.findById(id);
-
-        if (!locationOptional.isPresent())
-            throw new NotFoundException(ExceptionMessages.LOCATION_NOT_FOUND);
-
-        LocationEntity location = locationOptional.get();
+        LocationEntity location = checkLocationCorrectness(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(new LocationByIdResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_BY_ID, location));
     }
@@ -139,7 +126,7 @@ public class LocationService {
      * delete location with corresponding roles by ID
      *
      * @param id     ID of location
-     * @param header authorization JWT Token
+     * @param header authorization JWT header
      * @return info - successfully deleted location
      * @throws DatabaseException         occurs if there is no such user in database
      * @throws NotFoundException         occurs if location id is not valid
@@ -148,26 +135,98 @@ public class LocationService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @DeleteMapping("/{id}")
     public ResponseEntity deleteLocationById(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException, NotFoundException, PermissionDeniedException {
-        String username = parser.parse(header);
-
-        Optional<LocationEntity> locationOptional = locationRepository.findById(id);
-
-        if (!locationOptional.isPresent())
-            throw new NotFoundException(ExceptionMessages.LOCATION_NOT_FOUND);
-
-        LocationEntity location = locationOptional.get();
-
-        UserEntity user = userRepository.findUserByUsername(username);
-
-        if (user == null)
-            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
-
-        if (!location.getOwner().equals(user))
-            throw new PermissionDeniedException(ExceptionMessages.DELETION_VALIDATION_ERROR);
+        LocationEntity location = checkLocationCorrectness(id);
+        UserEntity user = checkUserCorrectness(header);
+        checkUserPermissions(user, location);
 
         roleRepository.deleteAll(location.getRoles());
         locationRepository.delete(location);
 
         return ResponseEntity.status(HttpStatus.OK).body(new LocationDeletionResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_DELETION));
+    }
+
+    /**
+     * edit location with given id
+     *
+     * @param editedLocation location properties
+     * @param errors         validation errors
+     * @param id             ID of location
+     * @param header         JWT authorization bearer token
+     * @return response with edited location
+     * @throws NotFoundException         occurs if there is no location with given id
+     * @throws DatabaseException         occurs if saving or loading data from database are wrong
+     * @throws PermissionDeniedException occurs if user has no permissions to edit this location
+     */
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
+    @PutMapping("/{id}")
+    public ResponseEntity editLocationById(@Valid @RequestBody LocationSchemaDto editedLocation, Errors errors, @PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws NotFoundException, DatabaseException, PermissionDeniedException {
+        if (errors.hasErrors())
+            throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
+
+        LocationEntity location = checkLocationCorrectness(id);
+        UserEntity user = checkUserCorrectness(header);
+        checkUserPermissions(user, location);
+
+        //update roles
+        List<RoleEntity> roles = location.getRoles();
+        List<RoleEntity> editedRoles = editedLocation.getRoles();
+        roleRepository.deleteAll(roles);
+        roleRepository.saveAll(editedRoles);
+
+        //update location
+        location.setName(editedLocation.getName());
+        location.setDescription(editedLocation.getDescription());
+        location.setRoles(editedRoles);
+        location.setDate(Calendar.getInstance().getTime());
+        LocationEntity savedLocation = locationRepository.save(location);
+
+        if (!savedLocation.equals(location))
+            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new LocationEditionResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_HAS_BEEN_EDITED, location));
+    }
+
+    /**
+     * check whether user exists in database
+     *
+     * @param header authorization JWT header
+     * @return user entity from database
+     * @throws DatabaseException occurs if user does not exist in database
+     */
+    private UserEntity checkUserCorrectness(String header) throws DatabaseException {
+        UserEntity user = userRepository.findUserByUsername(parser.parse(header));
+
+        if (user == null)
+            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+
+        return user;
+    }
+
+    /**
+     * check whether location exists in database
+     *
+     * @param id ID of location
+     * @return location entity from database
+     * @throws NotFoundException occurs if location has not been found in database
+     */
+    private LocationEntity checkLocationCorrectness(String id) throws NotFoundException {
+        Optional<LocationEntity> locationOptional = locationRepository.findById(id);
+
+        if (!locationOptional.isPresent())
+            throw new NotFoundException(ExceptionMessages.LOCATION_NOT_FOUND);
+
+        return locationOptional.get();
+    }
+
+    /**
+     * check whether user has permissions to location (user should be owner of location to edit it)
+     *
+     * @param user     checked user
+     * @param location location to check
+     * @throws PermissionDeniedException occurs if user has no permissions to edit location
+     */
+    private void checkUserPermissions(UserEntity user, LocationEntity location) throws PermissionDeniedException {
+        if (!location.getOwner().equals(user))
+            throw new PermissionDeniedException(ExceptionMessages.DELETION_VALIDATION_ERROR);
     }
 }
