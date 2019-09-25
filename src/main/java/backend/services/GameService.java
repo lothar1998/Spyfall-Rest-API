@@ -7,16 +7,17 @@ import backend.databases.entities.LocationEntity;
 import backend.databases.entities.RoleEntity;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.GameRepository;
+import backend.databases.repositories.LocationRepository;
 import backend.databases.repositories.UserRepository;
 import backend.exceptions.DatabaseException;
 import backend.exceptions.ExceptionMessages;
+import backend.exceptions.NotFoundException;
 import backend.models.request.game.GameCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.game.GameCreationResponseDto;
 import backend.models.response.game.GameListResponseDto;
 import backend.parsers.UserNameParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,10 +43,12 @@ public class GameService {
 
     private GameRepository gameRepository;
     private UserRepository userRepository;
+    private LocationRepository locationRepository;
 
-    @Autowired
-    public GameService(GameRepository gameRepository) {
+    public GameService(GameRepository gameRepository, UserRepository userRepository, LocationRepository locationRepository) {
         this.gameRepository = gameRepository;
+        this.userRepository = userRepository;
+        this.locationRepository = locationRepository;
     }
 
     @PostMapping(ContextPaths.GAME_CREATE)
@@ -58,20 +61,42 @@ public class GameService {
         if (host == null)
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        //TODO: maybe Collection.addAll?
-        List<RoleEntity> rolesToSave = new ArrayList<>();
-        for (RoleEntity r : game.getLocation().getRoles()){
-            rolesToSave.add(r);
-        }
+        LocationEntity location = checkLocationCorrectness(game.getLocation().getId());
 
-        GameEntity gameToSave = new GameEntity(host, new Date(), game.getLocation(), rolesToSave);
+        Map<RoleEntity,UserEntity> playersWithRoles = new HashMap<>();
+
+        GameEntity gameToSave = new GameEntity(host, new Date(), location, playersWithRoles);
+
+        GameEntity savedGame = gameRepository.save(gameToSave);
+
+        gameToSave.setId(savedGame.getId());
+
+        if (!savedGame.equals(gameToSave))
+            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new GameCreationResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_HAS_BEEN_CREATED,gameToSave));
     }
 
+    //TODO: implement getRandomRole function, also consider ALWAYS setting spy and how to do it
 
+    /**
+     * check whether location exists in database
+     *
+     * @param id ID of location
+     * @return location entity from database
+     * @throws NotFoundException occurs if location has not been found in database
+     * @author Piotr Kuglin
+     */
+    private LocationEntity checkLocationCorrectness(String id) throws NotFoundException {
+        Optional<LocationEntity> locationOptional = locationRepository.findById(id);
+
+        if (!locationOptional.isPresent())
+            throw new NotFoundException(ExceptionMessages.LOCATION_NOT_FOUND);
+
+        return locationOptional.get();
+    }
 
     //TODO: something's wrong in here
     @GetMapping(ContextPaths.GAME_GET_ALL_GAMES)

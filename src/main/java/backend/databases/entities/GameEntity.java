@@ -13,6 +13,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Game entity
@@ -45,5 +46,5 @@ public class GameEntity {
     @Field(value = "playerRole")
     @NotBlank
     @DBRef(lazy = true)
-    private @NonNull List<RoleEntity> roles;
+    private @NonNull Map<RoleEntity,UserEntity> playersWithRoles;
 }
