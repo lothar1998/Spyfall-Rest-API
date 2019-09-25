@@ -1,5 +1,6 @@
 package backend.databases.entities;
 
+import backend.config.startup.StartupConfig;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +9,9 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 
@@ -27,18 +30,21 @@ public class LocationEntity {
 
     @Field(value = "name")
     @NotNull
+    @NotBlank
+    @Size(min = StartupConfig.LOCATION_NAME_MIN_LENGTH)
     private String name;
 
     @Field(value = "owner")
-    @NotNull
     @DBRef(lazy = true)
     @JsonIgnore
     private UserEntity owner;
 
     @Field(value = "description")
+    @NotNull
     private String description;
 
     @DBRef(lazy = true)
+    @NotNull
     private List<RoleEntity> roles;
 
     @Field(value = "lastModified")
