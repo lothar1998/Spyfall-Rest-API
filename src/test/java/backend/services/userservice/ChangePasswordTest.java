@@ -141,7 +141,7 @@ public class ChangePasswordTest {
         final String oldPassword = "janko123";
         final String newPassword = "janko1234";
 
-        PasswordChangeResponseDto response = new PasswordChangeResponseDto(Response.MessageType.INFO, ResponseMessages.PASSWORD_HAS_BEEN_CHANGED);
+        PasswordChangeResponseDto response = new PasswordChangeResponseDto(Response.MessageType.INFO, ResponseMessages.PASS_HAS_BEEN_CHANGED);
 
         Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("ENCODED_PASSWORD");
         Mockito.when(passwordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(true);

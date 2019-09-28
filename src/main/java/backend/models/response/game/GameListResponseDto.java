@@ -2,9 +2,15 @@ package backend.models.response.game;
 
 import backend.databases.entities.GameEntity;
 import backend.models.response.Response;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
+@NoArgsConstructor
+@Getter
+@Setter
 public class GameListResponseDto extends Response {
 
     private List<GameEntity> existingGames;

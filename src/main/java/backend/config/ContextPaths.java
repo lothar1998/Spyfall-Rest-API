@@ -33,7 +33,9 @@ public class ContextPaths {
      */
     public static final String GAME_MAIN_CONTEXT = "/game";
     public static final String GAME_CREATE = "/create";
-    public static final String GAME_GET_ALL_GAMES = "/all";
+    public static final String GAME_GET_ALL = "/all";
+    public static final String GAME_GET_BY_ID = "/{id}";
+    public static final String GAME_GET_BY_HOST = "/host";
 
     private ContextPaths() {
     }

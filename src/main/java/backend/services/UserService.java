@@ -2,7 +2,6 @@ package backend.services;
 
 import backend.config.ContextPaths;
 import backend.config.oauth2.UsersRoles;
-import backend.config.startup.StartupConfig;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
 import backend.exceptions.DatabaseException;
@@ -14,8 +13,7 @@ import backend.models.response.ResponseMessages;
 import backend.models.response.user.PasswordChangeResponseDto;
 import backend.models.response.user.UserCreationResponseDto;
 import backend.models.response.user.UserListResponseDto;
-import backend.parsers.UserNameParser;
-import org.springframework.beans.factory.annotation.Autowired;
+import backend.parsers.Parser;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +40,13 @@ public class UserService {
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private Parser<String> parser;
 
-    @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, Parser<String> parser) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.parser = parser;
     }
-
 
     /**
      * create user with given request
@@ -76,7 +74,6 @@ public class UserService {
         if (!savedUser.equals(userToSave))
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        savedUser.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
         return ResponseEntity.status(HttpStatus.CREATED).body(new UserCreationResponseDto(Response.MessageType.INFO, ResponseMessages.USER_HAS_BEEN_CREATED, savedUser));
     }
 
@@ -94,7 +91,7 @@ public class UserService {
         if (errors.hasErrors())
             throw new BadCredentialsException(ExceptionMessages.VALIDATION_ERROR);
 
-        String username = UserNameParser.getUsername(header);
+        String username = parser.parse(header);
 
         UserEntity foundUser = userRepository.findUserByUsername(username);
 
@@ -111,7 +108,7 @@ public class UserService {
         if (!savedUser.equals(foundUser))
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        return ResponseEntity.status(HttpStatus.OK).body(new PasswordChangeResponseDto(Response.MessageType.INFO, ResponseMessages.PASSWORD_HAS_BEEN_CHANGED));
+        return ResponseEntity.status(HttpStatus.OK).body(new PasswordChangeResponseDto(Response.MessageType.INFO, ResponseMessages.PASS_HAS_BEEN_CHANGED));
     }
 
     /**
@@ -129,10 +126,7 @@ public class UserService {
         if (!userList.iterator().hasNext())
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
-        userList.forEach(user -> {
-            user.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT);
-            users.add(user);
-        });
+        userList.forEach(users::add);
 
         return ResponseEntity.status(HttpStatus.OK).body(new UserListResponseDto(Response.MessageType.STATUS, ResponseMessages.LIST_OF_USERS_SHOWN, users));
     }

@@ -12,6 +12,8 @@ public class ExceptionMessages {
     public static final String LOCATION_NOT_FOUND = "location has not been found";
     public static final String DELETION_VALIDATION_ERROR = "user has not permissions to delete this resource";
 
+    public static final String GAME_NOT_FOUND = "game has not been found";
+
     private ExceptionMessages() {
     }
 }

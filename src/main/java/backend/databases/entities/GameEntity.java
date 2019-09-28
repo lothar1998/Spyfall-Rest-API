@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,5 +45,5 @@ public class GameEntity {
     @Field(value = "playerRole")
     @NotBlank
     @DBRef(lazy = true)
-    private @NonNull Map<RoleEntity,UserEntity> playersWithRoles;
+    private @NonNull Map<UserEntity,RoleEntity> playersWithRoles;
 }

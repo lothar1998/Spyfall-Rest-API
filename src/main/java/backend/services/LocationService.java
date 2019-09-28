@@ -14,7 +14,7 @@ import backend.models.request.location.LocationCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.location.LocationCreationResponseDto;
-import backend.parsers.UserNameParser;
+import backend.parsers.Parser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,13 +41,15 @@ public class LocationService {
     private LocationRepository locationRepository;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
+    private Parser<String> parser;
 
     @Autowired
-    public LocationService(LocationRepository locationRepository, UserRepository userRepository, RoleRepository roleRepository) {
+    public LocationService(LocationRepository locationRepository, UserRepository userRepository, RoleRepository roleRepository, Parser<String> parser) {
         this.locationRepository = locationRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-    }
+        this.parser = parser;
+}
 
     /**
      * create location with given request
@@ -57,6 +59,7 @@ public class LocationService {
      * @param header   JWT authorization bearer token
      * @return query response
      * @throws DatabaseException occurs when database returns incorrect responses
+     * @Author Piotr Kuglin
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.LOCATION_CREATE)
@@ -64,7 +67,7 @@ public class LocationService {
         if (errors.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
-        UserEntity owner = userRepository.findUserByUsername(UserNameParser.getUsername(header));
+        UserEntity owner = checkUserCorrectness(header);
 
         if (owner == null)
             throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
@@ -88,4 +91,19 @@ public class LocationService {
         return ResponseEntity.status(HttpStatus.CREATED).body(new LocationCreationResponseDto(Response.MessageType.INFO, ResponseMessages.LOCATION_HAS_BEEN_CREATED, savedLocation));
     }
 
+    /**
+     * check whether user exists in database
+     *
+     * @param header authorization JWT header
+     * @return user entity from database
+     * @throws DatabaseException occurs if user does not exist in database
+     */
+    private UserEntity checkUserCorrectness(String header) throws DatabaseException {
+        UserEntity user = userRepository.findUserByUsername(parser.parse(header));
+
+        if (user == null)
+            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+
+        return user;
+    }
 }
