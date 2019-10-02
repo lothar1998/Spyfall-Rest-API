@@ -13,13 +13,11 @@ import backend.databases.repositories.UserRepository;
 import backend.exceptions.DatabaseException;
 import backend.exceptions.ExceptionMessages;
 import backend.exceptions.NotFoundException;
+import backend.exceptions.PermissionDeniedException;
 import backend.models.request.game.GameCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
-import backend.models.response.game.GameByHostNameDto;
-import backend.models.response.game.GameByIdResponseDto;
-import backend.models.response.game.GameCreationResponseDto;
-import backend.models.response.game.GameListResponseDto;
+import backend.models.response.game.*;
 import backend.parsers.Parser;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,6 +30,7 @@ import javax.validation.Valid;
 import javax.validation.ValidationException;
 import java.util.*;
 
+//TODO: implement getRandomRole function, also consider ALWAYS setting spy and how to do it
 
 
 /**
@@ -70,6 +69,7 @@ public class GameService {
         LocationEntity location = checkLocationCorrectness(game.getLocation().getId());
 
         Map<String,RoleEntity> playersWithRoles = new HashMap<>();
+        //Load first player (host)
         playersWithRoles.put(host.getUsername(),null);
 
         GameEntity gameToSave = new GameEntity(host, new Date(), location, playersWithRoles);
@@ -100,31 +100,44 @@ public class GameService {
     }
 
 
-    @GetMapping(ContextPaths.GAME_GET_BY_ID)
+    @GetMapping(ContextPaths.GAME_METHOD_BY_ID)
     public ResponseEntity getGameById(@PathVariable String id) throws NotFoundException {
 
         GameEntity game = checkGameCorrectness(id);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new GameByIdResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_GET_BY_ID,game));
+                .body(new GameByIdResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_GET_BY_ID, game));
     }
 
+    @Secured({UsersRoles.ADMIN,UsersRoles.USER})
+    @DeleteMapping(ContextPaths.GAME_METHOD_BY_ID)
+    public ResponseEntity deleteExistingGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
+            throws NotFoundException, DatabaseException, PermissionDeniedException {
+        GameEntity game = checkGameCorrectness(id);
+        UserEntity user = checkUserCorrectness(header);
+        checkUserPermissions(user, game);
 
-    //TODO: not working, need to debug it
-    @GetMapping(ContextPaths.GAME_GET_BY_HOST)
-    public ResponseEntity getGameByHostName(@RequestParam String id) throws DatabaseException {
-
-        UserEntity host = checkUserCorrectness(id);
-        GameEntity game = gameRepository.findOneByHostId(host.getId());
-
-        if (game == null)
-            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+        gameRepository.delete(game);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new GameByHostNameDto(Response.MessageType.INFO,ResponseMessages.GAME_GET_BY_HOST_NAME,game));
+                .body(new GameDeletionResponseDto(Response.MessageType.INFO,ResponseMessages.GAME_DELETED));
     }
 
-    //TODO: implement getRandomRole function, also consider ALWAYS setting spy and how to do it
+
+
+    //TODO: not working and weird error message, need to debug it later
+//    @GetMapping(ContextPaths.GAME_GET_BY_HOST)
+//    public ResponseEntity getGameByHostName(@RequestParam String id) throws DatabaseException {
+//
+//        UserEntity host = checkUserCorrectness(id);
+//        GameEntity game = gameRepository.findOneByHostId(host.getId());
+//
+//        if (game == null)
+//            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
+//
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(new GameByHostNameDto(Response.MessageType.INFO,ResponseMessages.GAME_GET_BY_HOST_NAME,game));
+//    }
 
 
     /**
@@ -170,5 +183,19 @@ public class GameService {
             throw new NotFoundException(ExceptionMessages.GAME_NOT_FOUND);
 
         return game.get();
+    }
+
+
+    /**
+     * check whether user has permissions to location (user should be owner of location to edit it)
+     *
+     * @param user     checked user
+     * @param location location to check
+     * @throws PermissionDeniedException occurs if user has no permissions to edit location
+     * @author Piotr Kuglin
+     */
+    private void checkUserPermissions(UserEntity user, GameEntity location) throws PermissionDeniedException {
+        if (!location.getHost().equals(user))
+            throw new PermissionDeniedException(ExceptionMessages.DELETION_VALIDATION_ERROR);
     }
 }
