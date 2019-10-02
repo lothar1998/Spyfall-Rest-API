@@ -33,7 +33,6 @@ import javax.validation.ValidationException;
 import java.util.*;
 
 
-//TODO: include game id as a param
 
 /**
  * REST controller for Game queries
@@ -56,6 +55,8 @@ public class GameService {
         this.parser = parser;
     }
 
+
+    @Secured({UsersRoles.ADMIN, UsersRoles.ADMIN})
     @PostMapping(ContextPaths.GAME_CREATE)
     public ResponseEntity createGame(@Valid @RequestBody GameCreationDto game, Errors error, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws Exception {
         if (error.hasErrors())
@@ -68,14 +69,11 @@ public class GameService {
 
         LocationEntity location = checkLocationCorrectness(game.getLocation().getId());
 
-        Map<UserEntity,RoleEntity> playersWithRoles = new HashMap<>();
-        //TODO:
-//        playersWithRoles.put(host,null);
+        Map<String,RoleEntity> playersWithRoles = new HashMap<>();
+        playersWithRoles.put(host.getUsername(),null);
 
         GameEntity gameToSave = new GameEntity(host, new Date(), location, playersWithRoles);
-
         GameEntity savedGame = gameRepository.save(gameToSave);
-
         gameToSave.setId(savedGame.getId());
 
         if (!savedGame.equals(gameToSave))
@@ -85,6 +83,7 @@ public class GameService {
                 .status(HttpStatus.CREATED)
                 .body(new GameCreationResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_HAS_BEEN_CREATED,gameToSave));
     }
+
 
     @Secured(UsersRoles.ADMIN)
     @GetMapping(ContextPaths.GAME_GET_ALL)
@@ -100,6 +99,7 @@ public class GameService {
         return ResponseEntity.status(HttpStatus.OK).body(new GameListResponseDto(Response.MessageType.STATUS, ResponseMessages.LIST_OF_GAMES_SHOWN, games));
     }
 
+
     @GetMapping(ContextPaths.GAME_GET_BY_ID)
     public ResponseEntity getGameById(@PathVariable String id) throws NotFoundException {
 
@@ -109,9 +109,11 @@ public class GameService {
                 .body(new GameByIdResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_GET_BY_ID,game));
     }
 
+
     //TODO: not working, need to debug it
     @GetMapping(ContextPaths.GAME_GET_BY_HOST)
     public ResponseEntity getGameByHostName(@RequestParam String id) throws DatabaseException {
+
         UserEntity host = checkUserCorrectness(id);
         GameEntity game = gameRepository.findOneByHostId(host.getId());
 

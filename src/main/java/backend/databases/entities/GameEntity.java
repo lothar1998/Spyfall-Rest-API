@@ -1,9 +1,6 @@
 package backend.databases.entities;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -45,5 +42,5 @@ public class GameEntity {
     @Field(value = "playerRole")
     @NotBlank
     @DBRef(lazy = true)
-    private @NonNull Map<UserEntity,RoleEntity> playersWithRoles;
+    private @NonNull Map<String,RoleEntity> playersWithRoles;
 }
