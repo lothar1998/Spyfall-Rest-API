@@ -55,7 +55,6 @@ public class UserService {
      * @return query response
      * @throws DatabaseException occurs when database returns incorrect responses
      */
-    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.USER_CREATE)
     public ResponseEntity createUser(@Valid @RequestBody UserCreationDto user, Errors errors) throws DatabaseException {
         if (errors.hasErrors())
