@@ -13,6 +13,8 @@ public class ExceptionMessages {
     public static final String DELETION_VALIDATION_ERROR = "user has not permissions to delete this resource";
 
     public static final String GAME_NOT_FOUND = "game has not been found";
+    public static final String CHANGE_VALIDATION_ERROR = "user has not permissions modify this resource";
+    public static final String PLAYER_ALREADY_IN_GAME = "user is already in game";
 
     private ExceptionMessages() {
     }

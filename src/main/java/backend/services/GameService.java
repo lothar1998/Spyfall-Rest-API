@@ -10,10 +10,7 @@ import backend.databases.entities.UserEntity;
 import backend.databases.repositories.GameRepository;
 import backend.databases.repositories.LocationRepository;
 import backend.databases.repositories.UserRepository;
-import backend.exceptions.DatabaseException;
-import backend.exceptions.ExceptionMessages;
-import backend.exceptions.NotFoundException;
-import backend.exceptions.PermissionDeniedException;
+import backend.exceptions.*;
 import backend.models.request.game.GameCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
@@ -55,6 +52,15 @@ public class GameService {
     }
 
 
+    /**
+     * create location with given request
+     *
+     * @param game game properties
+     * @param error   validation errors
+     * @param header   JWT authorization bearer token
+     * @return query response
+     * @throws DatabaseException occurs when database returns incorrect responses
+     */
     @Secured({UsersRoles.ADMIN, UsersRoles.ADMIN})
     @PostMapping(ContextPaths.GAME_CREATE)
     public ResponseEntity createGame(@Valid @RequestBody GameCreationDto game,
@@ -64,9 +70,6 @@ public class GameService {
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
         UserEntity host = checkUserCorrectness(header);
-
-        if (host == null)
-            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
 
         LocationEntity location = checkLocationCorrectness(game.getLocation().getId());
 
@@ -87,6 +90,12 @@ public class GameService {
     }
 
 
+    /**
+     * get all existing games
+     *
+     * @return list of existing games
+     * @throws DatabaseException occur when owner is not found in database
+     */
     @Secured(UsersRoles.ADMIN)
     @GetMapping(ContextPaths.GAME_GET_ALL)
     public ResponseEntity getAllExistingGames() throws DatabaseException {
@@ -102,6 +111,13 @@ public class GameService {
     }
 
 
+    /**
+     * get game by its Id in database
+     *
+     * @param id Id of a game
+     * @return game details
+     * @throws NotFoundException occur when game is not found in database
+     */
     @GetMapping(ContextPaths.GAME_ID)
     public ResponseEntity getGameById(@PathVariable String id) throws NotFoundException {
 
@@ -114,29 +130,50 @@ public class GameService {
 
     @Secured({UsersRoles.ADMIN,UsersRoles.USER})
     @PutMapping(ContextPaths.GAME_ID)
-    public ResponseEntity updateGameLocation(@Valid @RequestBody GameCreationDto updatedGame,
+    public ResponseEntity updateGame(@Valid @RequestBody(required = false) GameCreationDto updatedGame,
                                              @PathVariable String id,
+                                             @RequestParam(required = false, name = "putLocation", defaultValue = "false") boolean putLocation,
+                                             @RequestParam(required = false, name = "putPlayer", defaultValue = "false") boolean putPlayer,
                                              Errors errors,
                                              @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
-            throws NotFoundException, DatabaseException, PermissionDeniedException {
+            throws NotFoundException, DatabaseException, PermissionDeniedException, AlreadyInGameException {
 
         if (errors.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
         GameEntity game = checkGameCorrectness(id);
-        UserEntity host = checkUserCorrectness(header);
-        checkUserPermissions(host, game);
+        UserEntity player = checkUserCorrectness(header);
 
         //change location
-        LocationEntity newLocation = checkLocationCorrectness(updatedGame.getLocation().getId());
-        game.setLocation(newLocation);
-        gameRepository.save(game);
+        if (putLocation) {
+            checkUserPermissions(player, game);
+            LocationEntity newLocation = checkLocationCorrectness(updatedGame.getLocation().getId());
+            game.setLocation(newLocation);
+            gameRepository.save(game);
+        }
+
+        //add Player
+        if (putPlayer) {
+            isPlayerAlreadyInGame(player, game);
+            game.getPlayersWithRoles().put(player.getUsername(),null);
+            gameRepository.save(game);
+        }
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GameEditionResponseDto(Response.MessageType.INFO,ResponseMessages.GAME_UPDATED, game));
     }
 
 
+    /**
+     * delete game by its ID
+     *
+     * @param id     ID of location
+     * @param header authorization JWT header
+     * @return info - successfully deleted game
+     * @throws DatabaseException         occurs if there is no such user in database
+     * @throws NotFoundException         occurs if game id is not valid
+     * @throws PermissionDeniedException occurs if user has no permission to delete this resource
+     */
     @Secured({UsersRoles.ADMIN,UsersRoles.USER})
     @DeleteMapping(ContextPaths.GAME_ID)
     public ResponseEntity deleteExistingGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
@@ -155,7 +192,7 @@ public class GameService {
 
     //TODO: not working and weird error message, need to debug it later
 //    @GetMapping(ContextPaths.GAME_GET_BY_HOST)
-//    public ResponseEntity getGameByHostName(@RequestParam String id) throws DatabaseException {
+//    public ResponseEntity getGameByHostName(@RequestParam(name = "host") String id) throws DatabaseException {
 //
 //        UserEntity host = checkUserCorrectness(id);
 //        GameEntity game = gameRepository.findOneByHostId(host.getId());
@@ -204,6 +241,14 @@ public class GameService {
     }
 
 
+    /**
+     * check whether game exists in database
+     *
+     * @param id ID of game
+     * @return game entity from database
+     * @throws NotFoundException occurs if game has not been found in database
+     * @author Piotr Kuglin
+     */
     private GameEntity checkGameCorrectness(String id) throws NotFoundException {
         Optional<GameEntity> game = gameRepository.findById(id);
 
@@ -215,15 +260,29 @@ public class GameService {
 
 
     /**
-     * check whether user has permissions to location (user should be owner of location to edit it)
+     * check whether user has permissions to game (user should be host of game to edit its location)
      *
      * @param user     checked user
-     * @param location location to check
+     * @param gameLocation game location to check
      * @throws PermissionDeniedException occurs if user has no permissions to edit location
      * @author Piotr Kuglin
      */
-    private void checkUserPermissions(UserEntity user, GameEntity location) throws PermissionDeniedException {
-        if (!location.getHost().equals(user))
-            throw new PermissionDeniedException(ExceptionMessages.DELETION_VALIDATION_ERROR);
+    private void checkUserPermissions(UserEntity user, GameEntity gameLocation) throws PermissionDeniedException {
+        if (!gameLocation.getHost().equals(user))
+            throw new PermissionDeniedException(ExceptionMessages.CHANGE_VALIDATION_ERROR);
+    }
+
+
+    /**
+     * check whether user has already joined the game
+     *
+     * @param player    user to check
+     * @param game      game to check
+     * @throws AlreadyInGameException occurs if player is already in game
+     * @author Kamil Kalis
+     */
+    private void isPlayerAlreadyInGame(UserEntity player, GameEntity game) throws AlreadyInGameException {
+        if (game.getPlayersWithRoles().containsKey(player.getUsername()))
+            throw new AlreadyInGameException(ExceptionMessages.PLAYER_ALREADY_IN_GAME);
     }
 }
