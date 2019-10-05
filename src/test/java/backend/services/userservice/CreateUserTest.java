@@ -13,6 +13,7 @@ import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.user.UserCreationResponseDto;
+import backend.parsers.Parser;
 import backend.services.UserService;
 import com.google.gson.Gson;
 import org.junit.Before;
@@ -49,6 +50,8 @@ public class CreateUserTest {
     private PasswordEncoder passwordEncoder;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
 

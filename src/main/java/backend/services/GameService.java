@@ -57,7 +57,9 @@ public class GameService {
 
     @Secured({UsersRoles.ADMIN, UsersRoles.ADMIN})
     @PostMapping(ContextPaths.GAME_CREATE)
-    public ResponseEntity createGame(@Valid @RequestBody GameCreationDto game, Errors error, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws Exception {
+    public ResponseEntity createGame(@Valid @RequestBody GameCreationDto game,
+                                     Errors error,
+                                     @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws Exception {
         if (error.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
@@ -81,7 +83,7 @@ public class GameService {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(new GameCreationResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_HAS_BEEN_CREATED,gameToSave));
+                .body(new GameCreationResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_CREATED,gameToSave));
     }
 
 
@@ -100,7 +102,7 @@ public class GameService {
     }
 
 
-    @GetMapping(ContextPaths.GAME_METHOD_BY_ID)
+    @GetMapping(ContextPaths.GAME_ID)
     public ResponseEntity getGameById(@PathVariable String id) throws NotFoundException {
 
         GameEntity game = checkGameCorrectness(id);
@@ -109,8 +111,34 @@ public class GameService {
                 .body(new GameByIdResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_GET_BY_ID, game));
     }
 
+
     @Secured({UsersRoles.ADMIN,UsersRoles.USER})
-    @DeleteMapping(ContextPaths.GAME_METHOD_BY_ID)
+    @PutMapping(ContextPaths.GAME_ID)
+    public ResponseEntity updateGameLocation(@Valid @RequestBody GameCreationDto updatedGame,
+                                             @PathVariable String id,
+                                             Errors errors,
+                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
+            throws NotFoundException, DatabaseException, PermissionDeniedException {
+
+        if (errors.hasErrors())
+            throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
+
+        GameEntity game = checkGameCorrectness(id);
+        UserEntity host = checkUserCorrectness(header);
+        checkUserPermissions(host, game);
+
+        //change location
+        LocationEntity newLocation = checkLocationCorrectness(updatedGame.getLocation().getId());
+        game.setLocation(newLocation);
+        gameRepository.save(game);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GameEditionResponseDto(Response.MessageType.INFO,ResponseMessages.GAME_UPDATED, game));
+    }
+
+
+    @Secured({UsersRoles.ADMIN,UsersRoles.USER})
+    @DeleteMapping(ContextPaths.GAME_ID)
     public ResponseEntity deleteExistingGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
             throws NotFoundException, DatabaseException, PermissionDeniedException {
         GameEntity game = checkGameCorrectness(id);
