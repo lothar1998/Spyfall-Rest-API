@@ -1,6 +1,7 @@
 package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -21,6 +22,7 @@ public class RoleEntity {
 
     @NotNull
     @DBRef(lazy = true)
+    @JsonIgnore
     private UserEntity owner;
 
     @NotNull

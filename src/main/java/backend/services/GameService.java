@@ -65,7 +65,7 @@ public class GameService {
     @PostMapping(ContextPaths.GAME_CREATE)
     public ResponseEntity createGame(@Valid @RequestBody GameCreationDto game,
                                      Errors error,
-                                     @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws Exception {
+                                     @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException, NotFoundException {
         if (error.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
@@ -75,6 +75,7 @@ public class GameService {
 
         Map<String,RoleEntity> playersWithRoles = new HashMap<>();
         //Load first player (host)
+        //TODO: put into map key ID
         playersWithRoles.put(host.getUsername(),null);
 
         GameEntity gameToSave = new GameEntity(host, new Date(), location, playersWithRoles);
@@ -94,19 +95,14 @@ public class GameService {
      * get all existing games
      *
      * @return list of existing games
-     * @throws DatabaseException occur when owner is not found in database
      */
     @Secured(UsersRoles.ADMIN)
     @GetMapping(ContextPaths.GAME_GET_ALL)
-    public ResponseEntity getAllExistingGames() throws DatabaseException {
-        List<GameEntity> games = new ArrayList<>();
+    public ResponseEntity getAllExistingGames() {
 
-        Iterable<GameEntity> gameList = gameRepository.findAll();
+        List<GameEntity> gameList = gameRepository.findAll();
 
-        if (!gameList.iterator().hasNext())
-            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
-
-        gameList.forEach(games::add);
+        List<GameEntity> games = new ArrayList<>(gameList);
         return ResponseEntity.status(HttpStatus.OK).body(new GameListResponseDto(Response.MessageType.STATUS, ResponseMessages.LIST_OF_GAMES_SHOWN, games));
     }
 
@@ -191,18 +187,15 @@ public class GameService {
 
 
     //TODO: not working and weird error message, need to debug it later
-//    @GetMapping(ContextPaths.GAME_GET_BY_HOST)
-//    public ResponseEntity getGameByHostName(@RequestParam(name = "host") String id) throws DatabaseException {
-//
-//        UserEntity host = checkUserCorrectness(id);
-//        GameEntity game = gameRepository.findOneByHostId(host.getId());
-//
-//        if (game == null)
-//            throw new DatabaseException(ExceptionMessages.DATABASE_ERROR);
-//
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(new GameByHostNameDto(Response.MessageType.INFO,ResponseMessages.GAME_GET_BY_HOST_NAME,game));
-//    }
+    @GetMapping(ContextPaths.GAME_GET_BY_HOST)
+    public ResponseEntity getGameByHostName(@RequestParam(name = "host") String id) throws DatabaseException {
+
+        UserEntity host = checkUserCorrectness(id);
+        GameEntity game = gameRepository.findByHost(host);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GameByHostNameDto(Response.MessageType.INFO,ResponseMessages.GAME_GET_BY_HOST_NAME,game));
+    }
 
 
     /**
