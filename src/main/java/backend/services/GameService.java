@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,7 +97,7 @@ public class GameService {
      *
      * @return list of existing games
      */
-    @Secured(UsersRoles.ADMIN)
+    @Secured({UsersRoles.ADMIN,UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_GET_ALL)
     public ResponseEntity getAllExistingGames() {
 
@@ -114,6 +115,7 @@ public class GameService {
      * @return game details
      * @throws NotFoundException occur when game is not found in database
      */
+    @Secured({UsersRoles.ADMIN,UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_ID)
     public ResponseEntity getGameById(@PathVariable String id) throws NotFoundException {
 
@@ -124,39 +126,66 @@ public class GameService {
     }
 
 
-    @Secured({UsersRoles.ADMIN,UsersRoles.USER})
-    @PutMapping(ContextPaths.GAME_ID)
-    public ResponseEntity updateGame(@Valid @RequestBody(required = false) GameCreationDto updatedGame,
+    /**
+     * edit game with given id
+     *
+     * @param updatedGame    new game game properties
+     * @param id             ID of game to update
+     * @param header         JWT authorization bearer token
+     * @param errors         validation errors
+     * @return response with edited game
+     * @throws NotFoundException         occurs if there is no game with given id
+     * @throws DatabaseException         occurs if saving or loading data from database are wrong
+     * @throws PermissionDeniedException occurs if user has no permissions to edit this game
+     */
+    @Secured({UsersRoles.USER,UsersRoles.ADMIN})
+    @PutMapping(ContextPaths.GAME_LOCATION + ContextPaths.GAME_ID)
+    public ResponseEntity updateGameLocation(@Valid @RequestBody GameCreationDto updatedGame,
                                              @PathVariable String id,
-                                             @RequestParam(required = false, name = "putLocation", defaultValue = "false") boolean putLocation,
-                                             @RequestParam(required = false, name = "putPlayer", defaultValue = "false") boolean putPlayer,
-                                             Errors errors,
-                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
-            throws NotFoundException, DatabaseException, PermissionDeniedException, AlreadyInGameException {
+                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header,
+                                             Errors errors) throws NotFoundException, DatabaseException, PermissionDeniedException {
 
         if (errors.hasErrors())
             throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
 
         GameEntity game = checkGameCorrectness(id);
         UserEntity player = checkUserCorrectness(header);
-
-        //change location
-        if (putLocation) {
-            checkUserPermissions(player, game);
-            LocationEntity newLocation = checkLocationCorrectness(updatedGame.getLocation().getId());
-            game.setLocation(newLocation);
-            gameRepository.save(game);
-        }
-
-        //add Player
-        if (putPlayer) {
-            isPlayerAlreadyInGame(player, game);
-            game.getPlayersWithRoles().put(player.getUsername(),null);
-            gameRepository.save(game);
-        }
+        checkUserPermissions(player, game);
+        LocationEntity newLocation = checkLocationCorrectness(updatedGame.getLocation().getId());
+        game.setLocation(newLocation);
+        gameRepository.save(game);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new GameEditionResponseDto(Response.MessageType.INFO,ResponseMessages.GAME_UPDATED, game));
+                .body(new GameEditionResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_LOCATION_UPDATED, game));
+    }
+
+
+    /**
+     * add player to existing game of given id
+     *
+     * @param id             ID of game to update
+     * @param header         JWT authorization bearer token
+     * @return response with edited game
+     * @throws NotFoundException         occurs if there is no game with given id
+     * @throws DatabaseException         occurs if saving or loading data from database are wrong
+     * @throws AlreadyInGameException    occurs if user has already joined the game
+     */
+    @Secured({UsersRoles.ADMIN,UsersRoles.USER})
+    @PutMapping(ContextPaths.GAME_JOIN + ContextPaths.GAME_ID)
+    public ResponseEntity addPlayerToGame(@PathVariable String id,
+                                          @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header
+                                          ) throws NotFoundException, DatabaseException, AlreadyInGameException {
+
+        GameEntity game = checkGameCorrectness(id);
+        UserEntity player = checkUserCorrectness(header);
+
+        isPlayerAlreadyInGame(player, game);
+
+        game.getPlayersWithRoles().put(player.getUsername(),null);
+        gameRepository.save(game);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GameEditionResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_PLAYER_JOINED, game));
     }
 
 

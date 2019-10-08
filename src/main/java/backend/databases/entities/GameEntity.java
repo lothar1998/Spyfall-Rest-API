@@ -11,6 +11,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Map;
 
+
+//TODO: add two new fields: bool gameStart, bool disableJoin
 /**
  * Game entity
  * @author Kamil Kaliś
