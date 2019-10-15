@@ -9,6 +9,7 @@ import backend.databases.entities.RoleEntity;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.GameRepository;
 import backend.databases.repositories.LocationRepository;
+import backend.databases.repositories.RoleRepository;
 import backend.databases.repositories.UserRepository;
 import backend.exceptions.*;
 import backend.models.request.game.GameCreationDto;
@@ -16,19 +17,18 @@ import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.game.*;
 import backend.parsers.Parser;
+import lombok.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.ValidationException;
+import javax.validation.constraints.NotBlank;
 import java.util.*;
-
-//TODO: implement getRandomRole function, also consider ALWAYS setting spy and how to do it
 
 
 /**
@@ -43,18 +43,20 @@ public class GameService {
     private GameRepository gameRepository;
     private UserRepository userRepository;
     private LocationRepository locationRepository;
+    private RoleRepository roleRepository;
     private Parser<String> parser;
 
-    public GameService(GameRepository gameRepository, UserRepository userRepository, LocationRepository locationRepository, Parser<String> parser) {
+    public GameService(GameRepository gameRepository, UserRepository userRepository, LocationRepository locationRepository, RoleRepository roleRepository, Parser<String> parser) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
         this.locationRepository = locationRepository;
+        this.roleRepository = roleRepository;
         this.parser = parser;
     }
 
 
     /**
-     * create location with given request
+     * create game with given request
      *
      * @param game game properties
      * @param error   validation errors
@@ -62,7 +64,7 @@ public class GameService {
      * @return query response
      * @throws DatabaseException occurs when database returns incorrect responses
      */
-    @Secured({UsersRoles.ADMIN, UsersRoles.ADMIN})
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.GAME_CREATE)
     public ResponseEntity createGame(@Valid @RequestBody GameCreationDto game,
                                      Errors error,
@@ -76,10 +78,11 @@ public class GameService {
 
         Map<String,RoleEntity> playersWithRoles = new HashMap<>();
         //Load first player (host)
-        //TODO: put into map key ID
         playersWithRoles.put(host.getUsername(),null);
 
         GameEntity gameToSave = new GameEntity(host, new Date(), location, playersWithRoles);
+        gameToSave.setDisabledJoin(false);
+        gameToSave.setGameStart(false);
         GameEntity savedGame = gameRepository.save(gameToSave);
         gameToSave.setId(savedGame.getId());
 
@@ -174,18 +177,69 @@ public class GameService {
     @PutMapping(ContextPaths.GAME_JOIN + ContextPaths.GAME_ID)
     public ResponseEntity addPlayerToGame(@PathVariable String id,
                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header
-                                          ) throws NotFoundException, DatabaseException, AlreadyInGameException {
+                                          ) throws NotFoundException, DatabaseException, AlreadyInGameException, JoiningToGameDisabled {
 
         GameEntity game = checkGameCorrectness(id);
         UserEntity player = checkUserCorrectness(header);
 
+
+        isJoiningToGameDisabled(game);
         isPlayerAlreadyInGame(player, game);
 
-        game.getPlayersWithRoles().put(player.getUsername(),null);
+        game.getPlayersWithRoles().put(player.getUsername(), null);
         gameRepository.save(game);
+
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GameEditionResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_PLAYER_JOINED, game));
+    }
+
+    /**
+     * Endpoint to start a game
+     * @param id        id of a game to start
+     * @param header    authorization JWT header
+     * @return          response with started game
+     * @throws NotFoundException occurs if there is no game with given id
+     */
+    @PutMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
+    public ResponseEntity startGame(@PathVariable String id,
+                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws NotFoundException, DatabaseException, TooManyPlayersException, PermissionDeniedException, GameHasAlreadyStarted {
+
+        GameEntity game = checkGameCorrectness(id);
+        UserEntity host = checkUserCorrectness(header);
+
+        isGameStarted(game);
+
+        checkUserPermissions(host,game);
+        game.setDisabledJoin(true);
+        checkNumberOfPlayersAndRoles(game);
+
+        //create instance of Spy
+        RoleEntity spy = new RoleEntity(host,"Spy",
+                "You are the Spy! Try to figure out location of other players. Do not get disguised!");
+        RoleEntity savedSpy = roleRepository.save(spy);
+        spy.setId(savedSpy.getId());
+
+        //get players, roles from location and Map with players and corresponding roles
+        @NotBlank @NonNull Map<String, RoleEntity> playersWithRoles = game.getPlayersWithRoles();
+        List<RoleEntity> rolesInGameLocation = game.getLocation().getRoles();
+        rolesInGameLocation.add(spy);
+        Collections.shuffle(rolesInGameLocation);
+
+        //set random roles
+        int index = 0;
+        for (String key: playersWithRoles.keySet()){
+            playersWithRoles.put(key,rolesInGameLocation.get(index));
+            index++;
+        }
+
+        game.setGameStart(true);
+
+        gameRepository.save(game);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GameHasStartedResponseDto(Response.MessageType.INFO,ResponseMessages.GAME_HAS_STARTED,game));
     }
 
 
@@ -207,23 +261,16 @@ public class GameService {
         UserEntity user = checkUserCorrectness(header);
         checkUserPermissions(user, game);
 
+        if(game.isGameStart())
+        {
+            RoleEntity spy = roleRepository.findByName("Spy");
+            roleRepository.delete(spy);
+        }
+
         gameRepository.delete(game);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GameDeletionResponseDto(Response.MessageType.INFO,ResponseMessages.GAME_DELETED));
-    }
-
-
-
-    //TODO: not working and weird error message, need to debug it later
-    @GetMapping(ContextPaths.GAME_GET_BY_HOST)
-    public ResponseEntity getGameByHostName(@RequestParam(name = "host") String id) throws DatabaseException {
-
-        UserEntity host = checkUserCorrectness(id);
-        GameEntity game = gameRepository.findByHost(host);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new GameByHostNameDto(Response.MessageType.INFO,ResponseMessages.GAME_GET_BY_HOST_NAME,game));
     }
 
 
@@ -306,5 +353,20 @@ public class GameService {
     private void isPlayerAlreadyInGame(UserEntity player, GameEntity game) throws AlreadyInGameException {
         if (game.getPlayersWithRoles().containsKey(player.getUsername()))
             throw new AlreadyInGameException(ExceptionMessages.PLAYER_ALREADY_IN_GAME);
+    }
+
+    private void isJoiningToGameDisabled(GameEntity game) throws JoiningToGameDisabled{
+        if(game.isDisabledJoin())
+            throw new JoiningToGameDisabled(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
+    }
+
+    private void isGameStarted(GameEntity game) throws GameHasAlreadyStarted{
+        if(game.isGameStart())
+            throw new GameHasAlreadyStarted(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
+    }
+
+    private void checkNumberOfPlayersAndRoles(GameEntity game) throws TooManyPlayersException {
+        if (game.getPlayersWithRoles().size()-1 > game.getLocation().getRoles().size())
+            throw new TooManyPlayersException(ExceptionMessages.GAME_LOCATION_NOT_ENOUGH_ROLES);
     }
 }

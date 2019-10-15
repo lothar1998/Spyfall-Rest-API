@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.Map;
 
 
-//TODO: add two new fields: bool gameStart, bool disableJoin
 /**
  * Game entity
  * @author Kamil Kaliś
@@ -34,7 +33,7 @@ public class GameEntity {
 
     @Field(value = "gameTime")
     @NotNull
-    private @NonNull Date gameStart;
+    private @NonNull Date gameTime;
 
     @Field(value = "gameLocation")
     @NotBlank
@@ -45,4 +44,12 @@ public class GameEntity {
     @NotBlank
     @DBRef(lazy = true)
     private @NonNull Map<String,RoleEntity> playersWithRoles;
+
+    @Field(value = "disabledJoin")
+    @NotBlank
+    private boolean disabledJoin;
+
+    @Field(value = "gameStart")
+    @NotBlank
+    private boolean gameStart;
 }

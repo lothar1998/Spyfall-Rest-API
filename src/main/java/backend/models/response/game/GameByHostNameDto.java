@@ -6,14 +6,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 public class GameByHostNameDto extends Response {
 
-    private GameEntity game;
+    private List<GameEntity> game;
 
-    public GameByHostNameDto(MessageType type, String message, GameEntity game) {
+    public GameByHostNameDto(MessageType type, String message, List<GameEntity> game) {
         super(type, message);
         this.game = game;
     }

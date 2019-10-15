@@ -18,9 +18,9 @@ public class ResponseMessages {
     public static final String GAME_GET_BY_HOST_NAME = "game found by host name";
     public static final String GAME_CREATED = "game has been created";
     public static final String GAME_DELETED = "game has been deleted";
-    public static final String GAME_UPDATED = "game properties has been changed";
     public static final String GAME_PLAYER_JOINED = "new player has joined the game";
     public static final String GAME_LOCATION_UPDATED = "game location has been changed";
+    public static final String GAME_HAS_STARTED = "game has started";
 
     private ResponseMessages() {
     }
