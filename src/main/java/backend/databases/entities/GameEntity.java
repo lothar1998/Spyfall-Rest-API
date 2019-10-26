@@ -49,7 +49,7 @@ public class GameEntity {
     @NotBlank
     private boolean disabledJoin;
 
-    @Field(value = "gameStart")
+    @Field(value = "gameStarted")
     @NotBlank
-    private boolean gameStart;
+    private boolean gameStarted;
 }
