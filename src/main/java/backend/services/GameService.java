@@ -212,6 +212,8 @@ public class GameService {
 
         checkUserPermissions(host, game);
         game.setDisabledJoin(true);
+        gameRepository.save(game);
+
         checkNumberOfPlayersAndRoles(game);
 
         //create instance of Spy
@@ -223,13 +225,16 @@ public class GameService {
         Map<String, RoleEntity> playersWithRoles = game.getPlayersWithRoles();
         List<RoleEntity> rolesInGameLocation = game.getLocation().getRoles();
 
-        rolesInGameLocation.add(spy);
-        Collections.shuffle(rolesInGameLocation);
+        List<String> shuffledPlayerKeys = new ArrayList<>(game.getPlayersWithRoles().keySet());
+        Collections.shuffle(shuffledPlayerKeys);
 
-        //set random roles
+        Collections.shuffle(rolesInGameLocation);
+        rolesInGameLocation.add(0, spy);
+
+        //set random roles for shuffled players
         int index = 0;
-        for (String key : playersWithRoles.keySet()) {
-            playersWithRoles.put(key, rolesInGameLocation.get(index++));
+        for (String newKey : shuffledPlayerKeys) {
+            playersWithRoles.put(newKey, rolesInGameLocation.get(index++));
         }
 
         game.setGameStarted(true);
