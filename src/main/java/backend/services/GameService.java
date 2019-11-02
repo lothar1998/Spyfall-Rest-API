@@ -29,7 +29,7 @@ import javax.validation.Valid;
 import javax.validation.ValidationException;
 import java.util.*;
 
-
+//TODO: Endpoint after game finishes -- for statistics etc
 /**
  * REST controller for Game queries
  *
@@ -93,13 +93,12 @@ public class GameService {
                 .body(new GameCreationResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_CREATED, gameToSave));
     }
 
-
     /**
      * get all existing games
      *
      * @return list of existing games
      */
-    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
+    @Secured(UsersRoles.ADMIN)
     @GetMapping(ContextPaths.GAME_GET_ALL)
     public ResponseEntity getAllExistingGames() {
 
@@ -128,31 +127,44 @@ public class GameService {
 
 
     /**
+     * get user games
+     *
+     * @param header JWT authorization bearer token
+     * @return game details
+     * @throws DatabaseException occur when game is not found in database
+     */
+    @Secured({UsersRoles.ADMIN, UsersRoles.USER})
+    @GetMapping(ContextPaths.GAME_GET_ALL + ContextPaths.GAME_USER)
+    public ResponseEntity getGameByHost(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException, NotFoundException {
+
+        UserEntity user = checkUserCorrectness(header);
+        List<GameEntity> game = checkGameByUserCorrectness(user);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GameListResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_GET_BY_USER, game));
+    }
+
+
+    /**
      * edit game with given id
      *
-     * @param updatedGame new game game properties
-     * @param id          ID of game to update
      * @param header      JWT authorization bearer token
-     * @param errors      validation errors
      * @return response with edited game
      * @throws NotFoundException         occurs if there is no game with given id
      * @throws DatabaseException         occurs if saving or loading data from database are wrong
      * @throws PermissionDeniedException occurs if user has no permissions to edit this game
      */
     @Secured({UsersRoles.USER, UsersRoles.ADMIN})
-    @PutMapping(ContextPaths.GAME_LOCATION + ContextPaths.GAME_ID)
-    public ResponseEntity updateGameLocation(@Valid @RequestBody GameCreationDto updatedGame,
-                                             @PathVariable String id,
-                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header,
-                                             Errors errors) throws NotFoundException, DatabaseException, PermissionDeniedException {
+    @PutMapping("/{gameId}" + ContextPaths.GAME_LOCATION + "/{locationId}")
+    public ResponseEntity updateGameLocation(@PathVariable String gameId,
+                                             @PathVariable String locationId,
+                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
+            throws NotFoundException, DatabaseException, PermissionDeniedException {
 
-        if (errors.hasErrors())
-            throw new ValidationException(ExceptionMessages.VALIDATION_ERROR);
-
-        GameEntity game = checkGameCorrectness(id);
+        GameEntity game = checkGameCorrectness(gameId);
         UserEntity player = checkUserCorrectness(header);
         checkUserPermissions(player, game);
-        LocationEntity newLocation = checkLocationCorrectness(updatedGame.getLocation().getId());
+        LocationEntity newLocation = checkLocationCorrectness(locationId);
         game.setLocation(newLocation);
         gameRepository.save(game);
 
@@ -327,6 +339,16 @@ public class GameService {
             throw new NotFoundException(ExceptionMessages.GAME_NOT_FOUND);
 
         return game.get();
+    }
+
+
+    private List<GameEntity> checkGameByUserCorrectness(UserEntity host) throws NotFoundException {
+        List<GameEntity> games = gameRepository.getGameEntityByHost(host);
+
+        if (games == null)
+            throw new NotFoundException(ExceptionMessages.GAME_NOT_FOUND);
+
+        return games;
     }
 
 
