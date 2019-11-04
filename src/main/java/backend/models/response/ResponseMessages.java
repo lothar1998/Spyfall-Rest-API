@@ -21,6 +21,8 @@ public class ResponseMessages {
     public static final String GAME_PLAYER_JOINED = "new player has joined the game";
     public static final String GAME_LOCATION_UPDATED = "game location has been changed";
     public static final String GAME_HAS_STARTED = "game has started";
+    public static final String GAME_FINISHED = "game has finished";
+    public static final String PLAYER_ROLE = "role for given player shown";
 
     private ResponseMessages() {
     }

@@ -29,7 +29,6 @@ import javax.validation.Valid;
 import javax.validation.ValidationException;
 import java.util.*;
 
-//TODO: Endpoint after game finishes -- for statistics etc
 /**
  * REST controller for Game queries
  *
@@ -80,8 +79,11 @@ public class GameService {
         playersWithRoles.put(host.getUsername(), null);
 
         GameEntity gameToSave = new GameEntity(host, new Date(), location, playersWithRoles);
+
         gameToSave.setDisabledJoin(false);
         gameToSave.setGameStarted(false);
+        gameToSave.setGameDisabled(false);
+
         GameEntity savedGame = gameRepository.save(gameToSave);
         gameToSave.setId(savedGame.getId());
 
@@ -116,7 +118,7 @@ public class GameService {
      * @throws NotFoundException occur when game is not found in database
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
-    @GetMapping(ContextPaths.GAME_ID)
+    @GetMapping(ContextPaths.GAME_FINISHED + ContextPaths.GAME_ID)
     public ResponseEntity getGameById(@PathVariable String id) throws NotFoundException {
 
         GameEntity game = checkGameCorrectness(id);
@@ -127,11 +129,40 @@ public class GameService {
 
 
     /**
+     * get info about game for given player
+     *
+     * @param header JWT authorization bearer token
+     * @param id     id of a game
+     * @return specific info for player
+     * @throws DatabaseException occur when player is not found in database
+     * @throws NotFoundException occur when game is not found in database
+     */
+    @Secured({UsersRoles.USER, UsersRoles.ADMIN})
+    @GetMapping(ContextPaths.GAME_ID)
+    public ResponseEntity getRoleByPlayer(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header,
+                                          @PathVariable String id) throws DatabaseException, NotFoundException {
+
+        UserEntity user = checkUserCorrectness(header);
+        GameEntity game = checkGameCorrectness(id);
+
+        Map<String, RoleEntity> roles = game.getPlayersWithRoles();
+        RoleEntity playerRole = roles.get(user.getUsername());
+        LocationEntity location = game.getLocation();
+        Date time = game.getGameTime();
+
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new PlayerGameInfoResponseDto(Response.MessageType.INFO, ResponseMessages.PLAYER_ROLE, playerRole, location, time));
+    }
+
+
+    /**
      * get user games
      *
      * @param header JWT authorization bearer token
      * @return game details
-     * @throws DatabaseException occur when game is not found in database
+     * @throws DatabaseException occur when user is not found in database
+     * @throws NotFoundException occur when game is not found in database
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_GET_ALL + ContextPaths.GAME_USER)
@@ -250,6 +281,7 @@ public class GameService {
         }
 
         game.setGameStarted(true);
+        game.setGameTime(new Date());
 
         gameRepository.save(game);
 
@@ -257,6 +289,36 @@ public class GameService {
                 .body(new GameHasStartedResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_HAS_STARTED, game));
     }
 
+
+    /**
+     * Endpoint to finish a game
+     *
+     * @param id     Id in a database of game
+     * @param header authorization JWT header
+     * @return info about success
+     * @throws NotFoundException          occurs if there is no game with given id
+     * @throws DatabaseException          occurs if saving or loading data from database are wrong
+     * @throws PermissionDeniedException  occurs if player don't have permission to modify resource
+     * @throws GameNotStartedYetException occurs if game is not started yet
+     */
+    @Secured({UsersRoles.USER, UsersRoles.ADMIN})
+    @PutMapping(ContextPaths.GAME_FINISH + ContextPaths.GAME_ID)
+    public ResponseEntity finishGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
+            throws NotFoundException, DatabaseException, PermissionDeniedException, GameNotStartedYetException {
+
+        GameEntity game = checkGameCorrectness(id);
+        UserEntity host = checkUserCorrectness(header);
+
+        checkUserPermissions(host, game);
+        checkGameNotStarted(game);
+
+        game.setGameDisabled(true);
+
+        gameRepository.save(game);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new GameFinishedResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_FINISHED));
+    }
 
     /**
      * delete game by its ID
@@ -271,17 +333,17 @@ public class GameService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @DeleteMapping(ContextPaths.GAME_ID)
     public ResponseEntity deleteExistingGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
-            throws NotFoundException, DatabaseException, PermissionDeniedException {
+            throws NotFoundException, DatabaseException, PermissionDeniedException, GameInProgressException {
         GameEntity game = checkGameCorrectness(id);
         UserEntity user = checkUserCorrectness(header);
         checkUserPermissions(user, game);
 
-        if (game.isGameStarted()) {
+        if (game.isGameDisabled()) {
             RoleEntity spy = roleRepository.findByName("Spy");
             roleRepository.delete(spy);
-        }
-
-        gameRepository.delete(game);
+            gameRepository.delete(game);
+        } else
+            throw new GameInProgressException(ExceptionMessages.GAME_IN_PROGRESS);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GameDeletionResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_DELETED));
@@ -342,8 +404,15 @@ public class GameService {
     }
 
 
-    private List<GameEntity> checkGameByUserCorrectness(UserEntity host) throws NotFoundException {
-        List<GameEntity> games = gameRepository.getGameEntityByHost(host);
+    /**
+     * check if user has any games and return them if so
+     *
+     * @param user User entity from DB to check
+     * @return List of games for given user
+     * @throws NotFoundException occurs if game has not been found in database
+     */
+    private List<GameEntity> checkGameByUserCorrectness(UserEntity user) throws NotFoundException {
+        List<GameEntity> games = gameRepository.getGameEntityByHost(user);
 
         if (games == null)
             throw new NotFoundException(ExceptionMessages.GAME_NOT_FOUND);
@@ -353,16 +422,15 @@ public class GameService {
 
 
     /**
-     * check whether user has permissions to game (user should be host of game to edit its location)
+     * check whether user has permissions to edit game (user should be host of game to edit its properties)
      *
      * @param user         checked user
-     * @param gameLocation game location to check
+     * @param game game location to check
      * @throws PermissionDeniedException occurs if user has no permissions to edit location
-     * @author Piotr Kuglin
      */
-    private void checkUserPermissions(UserEntity user, GameEntity gameLocation) throws PermissionDeniedException {
-        if (!gameLocation.getHost().equals(user))
-            throw new PermissionDeniedException(ExceptionMessages.CHANGE_VALIDATION_ERROR);
+    private void checkUserPermissions(UserEntity user, GameEntity game) throws PermissionDeniedException {
+        if (!game.getHost().equals(user))
+            throw new PermissionDeniedException(ExceptionMessages.PERMISSION_VALIDATION_ERROR);
     }
 
 
@@ -379,16 +447,45 @@ public class GameService {
             throw new AlreadyInGameException(ExceptionMessages.PLAYER_ALREADY_IN_GAME);
     }
 
+    /**
+     * check whether player can join the game before its start
+     *
+     * @param game Game to join
+     * @throws JoiningToGameDisabledException occurs when player can't join the game
+     */
     private void isJoiningToGameDisabled(GameEntity game) throws JoiningToGameDisabledException {
         if (game.isDisabledJoin())
             throw new JoiningToGameDisabledException(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
     }
 
+    /**
+     * check if game has already started
+     *
+     * @param game game from DB to check
+     * @throws GameHasAlreadyStartedException occurs when host already started the game
+     */
     private void isGameStarted(GameEntity game) throws GameHasAlreadyStartedException {
         if (game.isGameStarted())
             throw new GameHasAlreadyStartedException(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
     }
 
+    /**
+     * check if game doesn't yet started
+     *
+     * @param game game from DB to check
+     * @throws GameNotStartedYetException occurs when game not started
+     */
+    private void checkGameNotStarted(GameEntity game) throws GameNotStartedYetException {
+        if (!game.isGameStarted())
+            throw new GameNotStartedYetException(ExceptionMessages.GAME_NOT_STARTED_YET);
+    }
+
+    /**
+     * checks for number of players in game and number of roles in game location (including spy role)
+     *
+     * @param game Game with nested location in it
+     * @throws TooManyPlayersException occurs when there are not enough roles to distribute among players
+     */
     private void checkNumberOfPlayersAndRoles(GameEntity game) throws TooManyPlayersException {
         if (game.getPlayersWithRoles().size() - 1 > game.getLocation().getRoles().size())
             throw new TooManyPlayersException(ExceptionMessages.GAME_LOCATION_NOT_ENOUGH_ROLES);

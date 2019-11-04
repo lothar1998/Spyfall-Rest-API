@@ -39,6 +39,8 @@ public class ContextPaths {
     public static final String GAME_JOIN = "/join";
     public static final String GAME_START = "/start";
     public static final String GAME_USER = "/user";
+    public static final String GAME_FINISH = "/finish";
+    public static final String GAME_FINISHED = "/finished";
 
     private ContextPaths() {
     }
