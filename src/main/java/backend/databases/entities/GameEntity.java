@@ -1,7 +1,10 @@
 package backend.databases.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,7 +15,6 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Map;
 
-//TODO: JsonIgnore
 
 /**
  * Game entity
@@ -48,18 +50,18 @@ public class GameEntity {
 
     @Field(value = "disabledJoin")
     @NotBlank
-//    @JsonIgnore
+    @JsonIgnore
     private boolean disabledJoin;
 
     @Field(value = "gameStarted")
     @NotBlank
-//    @JsonIgnore
+    @JsonIgnore
     private boolean gameStarted;
 
 
     @Field(value = "gameDisabled")
     @NotBlank
-//    @JsonIgnore
+    @JsonIgnore
     private boolean gameDisabled;
 
 }

@@ -12,7 +12,11 @@ import backend.databases.repositories.GameRepository;
 import backend.databases.repositories.LocationRepository;
 import backend.databases.repositories.RoleRepository;
 import backend.databases.repositories.UserRepository;
-import backend.exceptions.*;
+import backend.exceptions.DatabaseException;
+import backend.exceptions.ExceptionMessages;
+import backend.exceptions.NotFoundException;
+import backend.exceptions.PermissionDeniedException;
+import backend.exceptions.game.*;
 import backend.models.request.game.GameCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
@@ -111,7 +115,7 @@ public class GameService {
 
 
     /**
-     * get game by its Id in database
+     * get finished game by its Id in database
      *
      * @param id Id of a game
      * @return game details
@@ -119,9 +123,10 @@ public class GameService {
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_FINISHED + ContextPaths.GAME_ID)
-    public ResponseEntity getGameById(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity getFinishedGameById(@PathVariable String id) throws NotFoundException, GameInProgressException {
 
         GameEntity game = checkGameCorrectness(id);
+        isGameInProgress(game);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GameByIdResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_GET_BY_ID, game));
@@ -145,6 +150,13 @@ public class GameService {
         UserEntity user = checkUserCorrectness(header);
         GameEntity game = checkGameCorrectness(id);
 
+        if (game.isGameDisabled()) {
+            // Redirect here
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Location", "/game/finished/" + id);
+            return new ResponseEntity(headers, HttpStatus.FOUND);
+        }
+
         Map<String, RoleEntity> roles = game.getPlayersWithRoles();
         RoleEntity playerRole = roles.get(user.getUsername());
         LocationEntity location = game.getLocation();
@@ -152,7 +164,7 @@ public class GameService {
 
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new PlayerGameInfoResponseDto(Response.MessageType.INFO, ResponseMessages.PLAYER_ROLE, playerRole, location, time));
+                .body(new PlayerGameInfoResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_PLAYER_INFO, playerRole, location, time));
     }
 
 
@@ -286,7 +298,7 @@ public class GameService {
         gameRepository.save(game);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new GameHasStartedResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_HAS_STARTED, game));
+                .body(new GameHasStartedResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_HAS_STARTED));
     }
 
 
@@ -310,9 +322,10 @@ public class GameService {
         UserEntity host = checkUserCorrectness(header);
 
         checkUserPermissions(host, game);
-        checkGameNotStarted(game);
+        isGameNotStarted(game);
 
         game.setGameDisabled(true);
+        game.setGameStarted(false);
 
         gameRepository.save(game);
 
@@ -333,7 +346,7 @@ public class GameService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @DeleteMapping(ContextPaths.GAME_ID)
     public ResponseEntity deleteExistingGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
-            throws NotFoundException, DatabaseException, PermissionDeniedException, GameInProgressException {
+            throws NotFoundException, DatabaseException, PermissionDeniedException, GameHasAlreadyStartedException {
         GameEntity game = checkGameCorrectness(id);
         UserEntity user = checkUserCorrectness(header);
         checkUserPermissions(user, game);
@@ -341,9 +354,11 @@ public class GameService {
         if (game.isGameDisabled()) {
             RoleEntity spy = roleRepository.findByName("Spy");
             roleRepository.delete(spy);
-            gameRepository.delete(game);
-        } else
-            throw new GameInProgressException(ExceptionMessages.GAME_IN_PROGRESS);
+        }
+
+        isGameStarted(game);
+
+        gameRepository.delete(game);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GameDeletionResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_DELETED));
@@ -475,9 +490,20 @@ public class GameService {
      * @param game game from DB to check
      * @throws GameNotStartedYetException occurs when game not started
      */
-    private void checkGameNotStarted(GameEntity game) throws GameNotStartedYetException {
+    private void isGameNotStarted(GameEntity game) throws GameNotStartedYetException {
         if (!game.isGameStarted())
             throw new GameNotStartedYetException(ExceptionMessages.GAME_NOT_STARTED_YET);
+    }
+
+    /**
+     * check if game is in progress
+     *
+     * @param game game to check
+     * @throws GameInProgressException occurs when game is in progress
+     */
+    private void isGameInProgress(GameEntity game) throws GameInProgressException {
+        if (!game.isGameDisabled() && game.isGameStarted())
+            throw new GameInProgressException(ExceptionMessages.GAME_IN_PROGRESS);
     }
 
     /**

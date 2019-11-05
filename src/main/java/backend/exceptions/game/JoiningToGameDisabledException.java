@@ -1,4 +1,4 @@
-package backend.exceptions;
+package backend.exceptions.game;
 
 public class JoiningToGameDisabledException extends Exception {
 
