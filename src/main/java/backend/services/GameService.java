@@ -122,8 +122,8 @@ public class GameService {
      * @throws NotFoundException occur when game is not found in database
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
-    @GetMapping(ContextPaths.GAME_FINISHED + ContextPaths.GAME_ID)
-    public ResponseEntity getFinishedGameById(@PathVariable String id) throws NotFoundException, GameInProgressException {
+    @GetMapping(ContextPaths.GAME_ID)
+    public ResponseEntity getGameLobby(@PathVariable String id) throws NotFoundException, GameInProgressException {
 
         GameEntity game = checkGameCorrectness(id);
         isGameInProgress(game);
@@ -143,19 +143,15 @@ public class GameService {
      * @throws NotFoundException occur when game is not found in database
      */
     @Secured({UsersRoles.USER, UsersRoles.ADMIN})
-    @GetMapping(ContextPaths.GAME_ID)
+    @GetMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
     public ResponseEntity getRoleByPlayer(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header,
-                                          @PathVariable String id) throws DatabaseException, NotFoundException {
+                                          @PathVariable String id) throws DatabaseException, NotFoundException, GameFinishedException, GameNotStartedYetException {
 
         UserEntity user = checkUserCorrectness(header);
         GameEntity game = checkGameCorrectness(id);
 
-        if (game.isGameDisabled()) {
-            // Redirect here
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Location", "/game/finished/" + id);
-            return new ResponseEntity(headers, HttpStatus.FOUND);
-        }
+        isGameNotStarted(game);
+        isGameFinished(game);
 
         Map<String, RoleEntity> roles = game.getPlayersWithRoles();
         RoleEntity playerRole = roles.get(user.getUsername());
@@ -504,6 +500,11 @@ public class GameService {
     private void isGameInProgress(GameEntity game) throws GameInProgressException {
         if (!game.isGameDisabled() && game.isGameStarted())
             throw new GameInProgressException(ExceptionMessages.GAME_IN_PROGRESS);
+    }
+
+    private void isGameFinished(GameEntity game) throws GameFinishedException {
+        if (game.isGameDisabled() && !game.isGameStarted())
+            throw new GameFinishedException(ExceptionMessages.GAME_FINISHED);
     }
 
     /**

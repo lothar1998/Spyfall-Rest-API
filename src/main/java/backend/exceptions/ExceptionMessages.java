@@ -18,6 +18,7 @@ public class ExceptionMessages {
     public static final String GAME_HAS_ALREADY_STARTED = "game has already started";
     public static final String GAME_NOT_STARTED_YET = "game has not started yet";
     public static final String GAME_IN_PROGRESS = "game is in progress and is not disabled";
+    public static final String GAME_FINISHED = "game has finished";
     public static final String GAME_LOCATION_NOT_ENOUGH_ROLES = "game location hasn't got enough roles";
 
     private ExceptionMessages() {
