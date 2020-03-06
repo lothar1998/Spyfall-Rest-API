@@ -1,6 +1,7 @@
 package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,6 +41,7 @@ public class UserEntity {
     @NotNull
     @NotBlank
     @Size(min = StartupConfig.PASSWORD_MIN_LENGTH)
+    @JsonIgnore
     private String password;
 
     @Field(value = "email")

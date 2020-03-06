@@ -7,15 +7,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * location by id response
+ *
+ * @author Piotr Kuglin
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class LocationCreationResponseDto extends Response {
+public class LocationByIdResponseDto extends Response {
 
     private LocationEntity location;
 
-    public LocationCreationResponseDto(MessageType type, String message, LocationEntity location) {
+    public LocationByIdResponseDto(MessageType type, String message, LocationEntity location) {
         super(type, message);
         this.location = location;
     }

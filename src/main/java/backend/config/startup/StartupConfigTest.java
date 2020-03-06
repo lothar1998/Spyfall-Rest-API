@@ -4,6 +4,9 @@ import backend.config.ProfileTypes;
 import backend.config.oauth2.UsersRoles;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
+import backend.parsers.JwtDecoder;
+import backend.parsers.Parser;
+import backend.parsers.UsernameParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -23,9 +26,6 @@ public class StartupConfigTest {
 
     private PasswordEncoder encoder;
     private UserRepository repository;
-
-    public static final int PASSWORD_MIN_LENGTH = 8;
-    public static final int USERNAME_MIN_LENGTH = 5;
 
     @Value("${default.admin.username}")
     private String adminUserName;
@@ -52,5 +52,10 @@ public class StartupConfigTest {
             final String credentials = "janko123";
             repository.save(new UserEntity(credentials, encoder.encode(credentials), credentials, UsersRoles.USER, true, null, null));
         };
+    }
+
+    @Bean
+    public Parser<String> usernameParser() {
+        return new UsernameParser(new JwtDecoder());
     }
 }

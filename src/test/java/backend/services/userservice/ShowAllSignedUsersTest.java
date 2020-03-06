@@ -3,7 +3,6 @@ package backend.services.userservice;
 import backend.config.ContextPaths;
 import backend.config.ProfileTypes;
 import backend.config.oauth2.UsersRoles;
-import backend.config.startup.StartupConfig;
 import backend.databases.entities.UserEntity;
 import backend.databases.repositories.UserRepository;
 import backend.exceptions.ExceptionDescriptions;
@@ -12,8 +11,9 @@ import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.user.UserListResponseDto;
+import backend.parsers.Parser;
 import backend.services.UserService;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -44,11 +44,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
 public class ShowAllSignedUsersTest {
 
-    private static Gson gson = new Gson();
+    private static ObjectMapper objectMapper = new ObjectMapper();
     @MockBean
     private PasswordEncoder passwordEncoder;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
 
@@ -61,11 +63,9 @@ public class ShowAllSignedUsersTest {
 
         Mockito.when(userRepository.findAll()).thenReturn(userList);
 
-        userList.forEach(userEntity -> userEntity.setPassword(StartupConfig.HASHED_PASSWORD_REPLACEMENT));
-
         UserListResponseDto response = new UserListResponseDto(Response.MessageType.STATUS, ResponseMessages.LIST_OF_USERS_SHOWN, userList);
-        
-        mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isOk());
+
+        mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(objectMapper.writeValueAsString(response))).andExpect(status().isOk());
     }
 
     @Test
@@ -92,6 +92,6 @@ public class ShowAllSignedUsersTest {
 
         Mockito.when(userRepository.findAll()).thenReturn(iterableList);
 
-        mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(gson.toJson(response))).andExpect(status().isInternalServerError());
+        mockMvc.perform(get(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_GET_ALL_USERS)).andExpect(content().json(objectMapper.writeValueAsString(response))).andExpect(status().isInternalServerError());
     }
 }

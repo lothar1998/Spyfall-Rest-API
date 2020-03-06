@@ -12,8 +12,11 @@ import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.user.PasswordChangeResponseDto;
+import backend.parsers.JwtDecoder;
+import backend.parsers.Parser;
+import backend.parsers.UsernameParser;
 import backend.services.UserService;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -43,24 +46,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
 public class ChangePasswordTest {
 
-    private static Gson gson = new Gson();
+    private static ObjectMapper objectMapper = new ObjectMapper();
     @MockBean
     private PasswordEncoder passwordEncoder;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private Parser<String> parser;
     @Autowired
     private MockMvc mockMvc;
 
     private final static String exampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjUwMjM3MjEsInVzZXJfbmFtZSI6ImphbmtvMTIzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIl0sImp0aSI6Ijc3YmQwYzJkLTViNGQtNGU0YS1hNmVjLTEyMjk4OWU5YTUwZCIsImNsaWVudF9pZCI6ImNsaWVudF9pZCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdfQ.C31mSjrCsinO-bKi_Ww6GoCSnbPmYyasTolkGp5Td-o";
+    private Parser<String> usernameParser = new UsernameParser(new JwtDecoder());
 
     @Test
     public void should_validate_oldPassword_size() throws Exception {
         ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
         PasswordChangeDto request = new PasswordChangeDto("asd", "janko123");
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
@@ -68,9 +74,9 @@ public class ChangePasswordTest {
         ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.VALIDATION_ERROR, ExceptionDescriptions.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 
         PasswordChangeDto request = new PasswordChangeDto("janko123", "123");
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
@@ -84,9 +90,9 @@ public class ChangePasswordTest {
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(null);
 
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
@@ -103,9 +109,9 @@ public class ChangePasswordTest {
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
 
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isBadRequest()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isBadRequest()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
@@ -116,6 +122,10 @@ public class ChangePasswordTest {
         ExceptionResponse response = new ExceptionResponse(Response.MessageType.ERROR,
                 ExceptionMessages.DATABASE_ERROR, ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
 
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
         Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("ENCODED_PASSWORD");
         Mockito.when(passwordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
         Mockito.when(userRepository.save(Mockito.any())).thenReturn(null);
@@ -130,9 +140,9 @@ public class ChangePasswordTest {
 
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
         Mockito.when(userRepository.save(Mockito.any(UserEntity.class))).thenReturn(savedUser);
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isInternalServerError()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isInternalServerError()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
@@ -155,10 +165,14 @@ public class ChangePasswordTest {
 
         PasswordChangeDto request = new PasswordChangeDto(oldPassword, newPassword);
 
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(foundUser);
 
-        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(gson.toJson(request))
+        mockMvc.perform(post(ContextPaths.USER_MAIN_CONTEXT + ContextPaths.USER_CHANGE_PASSWORD).contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + exampleToken))
-                .andExpect(status().isOk()).andExpect(content().json(gson.toJson(response)));
+                .andExpect(status().isOk()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 }
