@@ -268,7 +268,10 @@ public class GameService {
         checkNumberOfPlayersAndRoles(game);
 
         //create instance of Spy
-        RoleEntity spy = new RoleEntity(host, SpyCreation.SPY_NAME, SpyCreation.SPY_DESCRIPTION);
+        RoleEntity spy = new RoleEntity();
+        spy.setOwner(host);
+        spy.setName(SpyCreation.SPY_NAME);
+        spy.setDescription(SpyCreation.SPY_DESCRIPTION);
         RoleEntity savedSpy = roleRepository.save(spy);
         spy.setId(savedSpy.getId());
 
