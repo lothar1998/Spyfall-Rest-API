@@ -148,7 +148,7 @@ public class GameService {
      */
     @Secured({UsersRoles.USER, UsersRoles.ADMIN})
     @GetMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
-    public ResponseEntity getRoleByPlayer(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header,
+    public ResponseEntity getGameByPlayer(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header,
                                           @PathVariable String id) throws DatabaseException, NotFoundException, GameFinishedException, GameNotStartedYetException {
 
         UserEntity user = checkUserCorrectness(header);
@@ -178,10 +178,10 @@ public class GameService {
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_GET_ALL + ContextPaths.GAME_USER)
-    public ResponseEntity getGameByHost(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException, NotFoundException {
+    public ResponseEntity getGameByHost(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws DatabaseException {
 
         UserEntity user = checkUserCorrectness(header);
-        List<GameEntity> game = checkGameByUserCorrectness(user);
+        List<GameEntity> game = gameRepository.getGameEntityByHost(user);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new GameListResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_GET_BY_USER, game));
@@ -419,23 +419,6 @@ public class GameService {
             throw new NotFoundException(ExceptionMessages.GAME_NOT_FOUND);
 
         return game.get();
-    }
-
-
-    /**
-     * check if user has any games and return them if so
-     *
-     * @param user User entity from DB to check
-     * @return List of games for given user
-     * @throws NotFoundException occurs if game has not been found in database
-     */
-    private List<GameEntity> checkGameByUserCorrectness(UserEntity user) throws NotFoundException {
-        List<GameEntity> games = gameRepository.getGameEntityByHost(user);
-
-        if (games == null)
-            throw new NotFoundException(ExceptionMessages.GAME_NOT_FOUND);
-
-        return games;
     }
 
 
