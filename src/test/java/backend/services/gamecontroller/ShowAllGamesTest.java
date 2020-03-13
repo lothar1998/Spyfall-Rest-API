@@ -1,69 +1,92 @@
-//package backend.services.gamecontroller;
-//
-//
-//import backend.config.ContextPaths;
-//import backend.config.ProfileTypes;
-//import backend.config.oauth2.UsersRoles;
-//import backend.databases.entities.GameEntity;
-//import backend.databases.entities.LocationEntity;
-//import backend.databases.entities.RoleEntity;
-//import backend.databases.entities.UserEntity;
-//import backend.databases.repositories.GameRepository;
-//import backend.models.response.Response;
-//import backend.models.response.ResponseMessages;
-//import backend.models.response.game.GameListResponseDto;
-//import backend.services.GameService;
-//import com.google.gson.Gson;
-//import org.junit.Test;
-//import org.junit.runner.RunWith;
-//import org.mockito.Mockito;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.test.context.ActiveProfiles;
-//import org.springframework.test.context.junit4.SpringRunner;
-//import org.springframework.test.web.servlet.MockMvc;
-//
-//import java.util.Collections;
-//import java.util.*;
-//
-//import static java.lang.Boolean.TRUE;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-//
-//@RunWith(SpringRunner.class)
-//@WebMvcTest(GameService.class)
-//@ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
-//public class ShowAllGamesTest {
-//
-//    private static Gson gson = new Gson();
-//
-//    @MockBean
-//    private GameRepository gameRepository;
-//    @Autowired
-//    private MockMvc mockMvc;
-//
-//    @Test
-//    public void should_return_list_of_games() throws Exception {
-//
-//        List<GameEntity> gameList = new ArrayList<>();
-//        UserEntity userOne = new UserEntity("username","password","kalimero@mail.com",
-//                UsersRoles.USER,TRUE,new Date(), new Date());
-//        RoleEntity roleOne = new RoleEntity();
-//        RoleEntity roleTwo = new RoleEntity();
-//
-//        LocationEntity locationOne = new LocationEntity("locationOne",
-//                userOne,"descriptionOne",Arrays.asList(roleOne,roleTwo),new Date());
-//
-//        gameList.add(new GameEntity(userOne, new Date(), locationOne, roleOne));
-//
-//        Mockito.when(gameRepository.findAll()).thenReturn(gameList);
-//
-//        GameListResponseDto response = new GameListResponseDto(Response.MessageType.STATUS, ResponseMessages.LIST_OF_GAMES_SHOWN, gameList);
-//
-//        mockMvc.perform(get(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_GET_ALL_GAMES))
-//                .andExpect(content().json(gson.toJson(response)))
-//                .andExpect(status().isOk());
-//    }
-//}
+package backend.services.gamecontroller;
+
+
+import backend.config.ContextPaths;
+import backend.config.ProfileTypes;
+import backend.config.oauth2.UsersRoles;
+import backend.databases.entities.GameEntity;
+import backend.databases.entities.LocationEntity;
+import backend.databases.entities.RoleEntity;
+import backend.databases.entities.UserEntity;
+import backend.databases.repositories.GameRepository;
+import backend.databases.repositories.LocationRepository;
+import backend.databases.repositories.RoleRepository;
+import backend.databases.repositories.UserRepository;
+import backend.models.response.ExceptionResponse;
+import backend.parsers.JwtDecoder;
+import backend.parsers.Parser;
+import backend.parsers.UsernameParser;
+import backend.services.GameService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.*;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@RunWith(SpringRunner.class)
+@WebMvcTest(GameService.class)
+@ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
+public class ShowAllGamesTest {
+
+    private final static String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+            ".eyJleHAiOjE1NjkyNjYxNjQsInVzZXJfbmFtZSI6ImFkbWluIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJqdGkiOiIzYjlmYWVmMi0zMDVjLTRkY2UtOGNhMC0wYzEyMWYwYTA1ZGIiLCJjbGllbnRfaWQiOiJjbGllbnRfaWQiLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXX0" +
+            ".4-CyQK6tkXyH5YKvoAKSyrr1Pp5nWuG7mNLk8gFheLw";
+
+    @MockBean
+    private UserRepository userRepository;
+    @MockBean
+    private GameRepository gameRepository;
+    @MockBean
+    private LocationRepository locationRepository;
+    @MockBean
+    private RoleRepository roleRepository;
+    @MockBean
+    private Parser<String> parser;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    public void should_return_list_of_games() throws Exception {
+        List<GameEntity> list = new ArrayList<>();
+
+        UserEntity user1 = new UserEntity("janko123", "janko123", "mail@mail.com",
+                UsersRoles.USER, true, null, null);
+
+        UserEntity user2 = new UserEntity("janko1234", "janko1234", "mail2@mail.com",
+                UsersRoles.USER, true, null, null);
+
+        LocationEntity location = new LocationEntity("AGH", user1, "Coronavirus",
+                Collections.singletonList(new RoleEntity()), Date.from(Instant.EPOCH));
+
+        GameEntity game1 = new GameEntity(user1, Date.from(Instant.EPOCH), location,
+                Collections.singletonMap("User1", new RoleEntity()));
+        GameEntity game2 = new GameEntity(user2, Date.from(Instant.EPOCH), location,
+                Collections.singletonMap("User2", new RoleEntity()));
+
+        list.add(game1);
+        list.add(game2);
+
+        Mockito.when(gameRepository.findAll()).thenReturn(list);
+
+        mockMvc.perform(get(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_GET_ALL)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+}

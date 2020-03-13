@@ -22,6 +22,7 @@ import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
 import backend.models.response.game.*;
 import backend.parsers.Parser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,7 @@ public class GameService {
     private RoleRepository roleRepository;
     private Parser<String> parser;
 
+    @Autowired
     public GameService(GameRepository gameRepository, UserRepository userRepository, LocationRepository locationRepository, RoleRepository roleRepository, Parser<String> parser) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
