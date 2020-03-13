@@ -67,6 +67,7 @@ public class GameService {
      * @param header JWT authorization bearer token
      * @return query response
      * @throws DatabaseException occurs when database returns incorrect responses
+     * @throws NotFoundException occurs when location cannot been found
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PostMapping(ContextPaths.GAME_CREATE)
@@ -122,6 +123,7 @@ public class GameService {
      * @param id Id of a game
      * @return game details
      * @throws NotFoundException occur when game is not found in database
+     * @throws GameInProgressException occur when game is in progress
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_ID)

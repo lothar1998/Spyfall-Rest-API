@@ -2,6 +2,7 @@ package backend.exceptions;
 
 import backend.config.logs.ErrorLog;
 import backend.config.logs.WarningLog;
+import backend.exceptions.game.GameInProgressException;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import org.springframework.http.HttpHeaders;
@@ -48,5 +49,11 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
     public ResponseEntity handleInternalServerErrorException(Exception exception, WebRequest request) {
         ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.ERROR, exception.getMessage(), ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
         return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    @ExceptionHandler(value = GameInProgressException.class)
+    public ResponseEntity handleGameInProgressException(Exception exception, WebRequest request) {
+        ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.WARNING, exception.getMessage(), ExceptionDescriptions.BAD_REQUEST, HttpStatus.FORBIDDEN);
+        return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 }
