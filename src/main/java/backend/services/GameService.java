@@ -230,8 +230,8 @@ public class GameService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PutMapping(ContextPaths.GAME_JOIN + ContextPaths.GAME_ID)
     public ResponseEntity addPlayerToGame(@PathVariable String id,
-                                          @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header
-    ) throws NotFoundException, DatabaseException, GameActionForbiddenException, PermissionDeniedException {
+                                          @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
+            throws NotFoundException, DatabaseException, GameActionForbiddenException, PermissionDeniedException {
 
         GameEntity game = checkGameCorrectness(id);
         UserEntity player = checkUserCorrectness(header);
@@ -255,11 +255,13 @@ public class GameService {
      * @param header authorization JWT header
      * @return response with started game
      * @throws NotFoundException occurs if there is no game with given id
+     * //TODO: add exceptions
      */
     @PutMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     public ResponseEntity startGame(@PathVariable String id,
-                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws NotFoundException, DatabaseException, TooManyPlayersException, PermissionDeniedException, GameActionForbiddenException {
+                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
+            throws NotFoundException, DatabaseException, TooManyPlayersException, PermissionDeniedException, GameActionForbiddenException {
 
         GameEntity game = checkGameCorrectness(id);
         UserEntity host = checkUserCorrectness(header);
@@ -343,9 +345,10 @@ public class GameService {
      * @param id     ID of location
      * @param header authorization JWT header
      * @return info - successfully deleted game
-     * @throws DatabaseException         occurs if there is no such user in database
-     * @throws NotFoundException         occurs if game id is not valid
-     * @throws PermissionDeniedException occurs if user has no permission to delete this resource
+     * @throws DatabaseException            occurs if there is no such user in database
+     * @throws NotFoundException            occurs if game id is not valid
+     * @throws PermissionDeniedException    occurs if user has no permission to delete this resource
+     * @throws GameActionForbiddenException occurs when game has not started yet
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @DeleteMapping(ContextPaths.GAME_ID)

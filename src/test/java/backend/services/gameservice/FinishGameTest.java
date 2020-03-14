@@ -19,7 +19,6 @@ import backend.parsers.Parser;
 import backend.parsers.UsernameParser;
 import backend.services.GameService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -35,25 +34,25 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.sql.Date;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
 import java.util.Optional;
+import org.junit.Assert;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Tests for checking whether player is correctly added to game
+ * Tests for checking if game finishes correctly
  * @author kamkalis
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GameService.class)
 @ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
-public class AddPlayerToGameTest {
+public class FinishGameTest {
     private final static String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
             ".eyJleHAiOjE1NjkyNjYxNjQsInVzZXJfbmFtZSI6ImFkbWluIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJqdGkiOiIzYjlmYWVmMi0zMDVjLTRkY2UtOGNhMC0wYzEyMWYwYTA1ZGIiLCJjbGllbnRfaWQiOiJjbGllbnRfaWQiLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXX0" +
             ".4-CyQK6tkXyH5YKvoAKSyrr1Pp5nWuG7mNLk8gFheLw";
@@ -93,7 +92,7 @@ public class AddPlayerToGameTest {
 
         Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
 
-        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_JOIN + "/" + gameId)
+        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_FINISH + "/" + gameId)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                 .andExpect(status().isNotFound())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
@@ -112,82 +111,82 @@ public class AddPlayerToGameTest {
         });
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(null);
 
-        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_JOIN + "/" + gameId)
+        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_FINISH + "/" + gameId)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
-    public void should_occur_game_already_started_exception() throws Exception {
-        ExceptionResponse response = new ExceptionResponse(Response.MessageType.ERROR,
-                ExceptionMessages.GAME_HAS_ALREADY_STARTED, ExceptionDescriptions.PERMISSION_DENIED, HttpStatus.FORBIDDEN);
+    public void should_occur_permission_denied_exception_due_to_invalid_user_permission() throws Exception {
+        ExceptionResponse response = new ExceptionResponse(Response.MessageType.ERROR, ExceptionMessages.PERMISSION_VALIDATION_ERROR,
+                ExceptionDescriptions.PERMISSION_DENIED, HttpStatus.FORBIDDEN);
 
-        GameEntity gameEntity = new GameEntity(userEntity, Date.from(Instant.EPOCH), locationEntity,
-                Collections.singletonMap("User", new RoleEntity()));
-        gameEntity.setDisabledJoin(true);
+        GameEntity game = new GameEntity(new UserEntity(), Date.from(Instant.EPOCH), locationEntity, Collections.emptyMap());
 
-        Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.of(gameEntity));
+        Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.of(game));
+
         Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
             Object[] args = invocation.getArguments();
             return usernameParser.parse((String) args[0]);
         });
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(userEntity);
 
-        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_JOIN + "/" + gameId)
+        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_FINISH + "/" + gameId)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                 .andExpect(status().isForbidden())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
-    public void should_occur_player_is_already_in_game_exception() throws Exception {
-        ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING,
-                ExceptionMessages.PLAYER_ALREADY_IN_GAME, ExceptionDescriptions.PERMISSION_DENIED, HttpStatus.FORBIDDEN);
+    public void should_occur_game_action_forbidden_when_game_is_not_started() throws Exception {
+        ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.GAME_NOT_STARTED_YET,
+                ExceptionDescriptions.PERMISSION_DENIED, HttpStatus.FORBIDDEN);
 
-        GameEntity gameEntity = new GameEntity(userEntity, Date.from(Instant.EPOCH), locationEntity,
-                Collections.singletonMap("User", new RoleEntity()));
+        GameEntity game = new GameEntity(userEntity, Date.from(Instant.EPOCH), locationEntity, Collections.emptyMap());
+        game.setGameStarted(false);
+        game.setGameDisabled(false);
 
-        Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.of(gameEntity));
+        Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.of(game));
+
         Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
             Object[] args = invocation.getArguments();
             return usernameParser.parse((String) args[0]);
         });
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(userEntity);
-        Mockito.when(userEntity.getUsername()).thenReturn("User");
 
-        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_JOIN + "/" + gameId)
+        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_FINISH + "/" + gameId)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                 .andExpect(status().isForbidden())
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
-    public void should_correctly_put_player_and_update_game() throws Exception {
-        Map<String, RoleEntity> map = new HashMap<>();
-        map.put("User", null);
-        UserEntity user = new UserEntity("username", "password1234", "email@email.com",
-                "ADMIN", true, java.util.Date.from(Instant.EPOCH), java.util.Date.from(Instant.EPOCH));
+    public void should_finish_the_game() throws Exception {
+        GameEntity game = new GameEntity(userEntity, Date.from(Instant.EPOCH), locationEntity, Collections.emptyMap());
+        game.setGameStarted(false);
+        game.setGameDisabled(false);
 
-        LocationEntity location = new LocationEntity("Location", user, "Description",
-                Collections.singletonList(new RoleEntity()), java.util.Date.from(Instant.EPOCH));
+        Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.of(game));
 
-        GameEntity gameEntity = new GameEntity(user, Date.from(Instant.EPOCH), location, map);
-
-        Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.of(gameEntity));
         Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
             Object[] args = invocation.getArguments();
             return usernameParser.parse((String) args[0]);
         });
         Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(userEntity);
-        Mockito.when(userEntity.getUsername()).thenReturn("UserMock");
+
+        game.setGameDisabled(true);
+        game.setGameStarted(false);
+
+        Assert.assertTrue(game.isGameDisabled());
+        Assert.assertFalse(game.isGameStarted());
 
         Mockito.when(gameRepository.save(Mockito.any())).thenAnswer((Answer<GameEntity>) invocation -> {
             Object[] args = invocation.getArguments();
             return (GameEntity) args[0];
         });
 
-        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_JOIN + "/" + gameId)
+        mockMvc.perform(put(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_FINISH + "/" + gameId)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer " + token))
                 .andExpect(status().isOk());
     }
