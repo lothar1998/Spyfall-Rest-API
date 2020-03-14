@@ -1,4 +1,4 @@
-package backend.services.gamecontroller;
+package backend.services.gameservice;
 
 import backend.config.ContextPaths;
 import backend.config.ProfileTypes;
@@ -46,6 +46,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
+/**
+ * Tests for checking game creation
+ * @author kamkalis
+ */
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = ProfileTypes.TEST_PROFILE)
 @WebMvcTest(value = GameService.class)

@@ -1,4 +1,4 @@
-package backend.services.gamecontroller;
+package backend.services.gameservice;
 
 
 import backend.config.ContextPaths;
@@ -12,17 +12,10 @@ import backend.databases.repositories.GameRepository;
 import backend.databases.repositories.LocationRepository;
 import backend.databases.repositories.RoleRepository;
 import backend.databases.repositories.UserRepository;
-import backend.models.response.ExceptionResponse;
-import backend.parsers.JwtDecoder;
 import backend.parsers.Parser;
-import backend.parsers.UsernameParser;
 import backend.services.GameService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -39,6 +32,10 @@ import java.util.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Tests for checking the game listing
+ * @author kamkalis
+ */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GameService.class)
 @ActiveProfiles(value = ProfileTypes.TEST_PROFILE)

@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 import java.util.*;
-
+//TODO: Check docs
 /**
  * REST controller for Game queries
  *
@@ -145,6 +145,7 @@ public class GameService {
      * @return specific info for player
      * @throws DatabaseException occur when player is not found in database
      * @throws NotFoundException occur when game is not found in database
+     * @throws GameActionForbiddenException occur when action cannot been performed due to state of game
      */
     @Secured({UsersRoles.USER, UsersRoles.ADMIN})
     @GetMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
@@ -161,7 +162,6 @@ public class GameService {
         RoleEntity playerRole = roles.get(user.getUsername());
         LocationEntity location = game.getLocation();
         Date time = game.getGameTime();
-
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new PlayerGameInfoResponseDto(Response.MessageType.INFO, ResponseMessages.GAME_PLAYER_INFO, playerRole, location, time));
@@ -477,7 +477,7 @@ public class GameService {
      * @throws GameActionForbiddenException occurs when game not started
      */
     private void isGameNotStarted(GameEntity game) throws GameActionForbiddenException {
-        if (!game.isGameStarted())
+        if (!game.isGameStarted() && !game.isGameDisabled())
             throw new GameActionForbiddenException(ExceptionMessages.GAME_NOT_STARTED_YET);
     }
 
