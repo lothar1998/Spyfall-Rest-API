@@ -16,7 +16,8 @@ import backend.exceptions.DatabaseException;
 import backend.exceptions.ExceptionMessages;
 import backend.exceptions.NotFoundException;
 import backend.exceptions.PermissionDeniedException;
-import backend.exceptions.game.*;
+import backend.exceptions.game.GameActionForbiddenException;
+import backend.exceptions.game.TooManyPlayersException;
 import backend.models.request.game.GameCreationDto;
 import backend.models.response.Response;
 import backend.models.response.ResponseMessages;
@@ -286,7 +287,7 @@ public class GameService {
 
         //get players, roles from location and Map with players and corresponding roles
         Map<String, RoleEntity> playersWithRoles = game.getPlayersWithRoles();
-        List<RoleEntity> rolesInGameLocation = game.getLocation().getRoles();
+        List<RoleEntity> rolesInGameLocation = new ArrayList<>(game.getLocation().getRoles());
 
         List<String> shuffledPlayerKeys = new ArrayList<>(game.getPlayersWithRoles().keySet());
         Collections.shuffle(shuffledPlayerKeys);
