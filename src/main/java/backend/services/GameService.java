@@ -174,7 +174,6 @@ public class GameService {
      * @param header JWT authorization bearer token
      * @return game details
      * @throws DatabaseException occur when user is not found in database
-     * @throws NotFoundException occur when game is not found in database
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_GET_ALL + ContextPaths.GAME_USER)
@@ -207,6 +206,7 @@ public class GameService {
         GameEntity game = checkGameCorrectness(gameId);
         UserEntity player = checkUserCorrectness(header);
         checkUserPermissions(player, game);
+
         LocationEntity newLocation = checkLocationCorrectness(locationId);
         game.setLocation(newLocation);
         gameRepository.save(game);
@@ -225,6 +225,7 @@ public class GameService {
      * @throws NotFoundException      occurs if there is no game with given id
      * @throws DatabaseException      occurs if saving or loading data from database are wrong
      * @throws GameActionForbiddenException occurs if user has already joined the game
+     * @throws PermissionDeniedException occurs when user tries to enter game while its disabled
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PutMapping(ContextPaths.GAME_JOIN + ContextPaths.GAME_ID)
