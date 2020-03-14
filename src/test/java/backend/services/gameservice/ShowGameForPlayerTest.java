@@ -14,11 +14,15 @@ import backend.exceptions.ExceptionDescriptions;
 import backend.exceptions.ExceptionMessages;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
+import backend.models.response.ResponseMessages;
+import backend.models.response.game.PlayerGameInfoResponseDto;
 import backend.parsers.JwtDecoder;
 import backend.parsers.Parser;
 import backend.parsers.UsernameParser;
 import backend.services.GameService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -34,13 +38,18 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 
 /**
@@ -55,6 +64,7 @@ public class ShowGameForPlayerTest {
             ".eyJleHAiOjE1NjkyNjYxNjQsInVzZXJfbmFtZSI6ImFkbWluIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJqdGkiOiIzYjlmYWVmMi0zMDVjLTRkY2UtOGNhMC0wYzEyMWYwYTA1ZGIiLCJjbGllbnRfaWQiOiJjbGllbnRfaWQiLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXX0" +
             ".4-CyQK6tkXyH5YKvoAKSyrr1Pp5nWuG7mNLk8gFheLw";
     private final static String gameId = "507f1f77bcf86cd799439011";
+
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     @MockBean
@@ -73,7 +83,7 @@ public class ShowGameForPlayerTest {
 
     @Mock
     private UserEntity userEntity;
-    @Mock
+    @InjectMocks
     private RoleEntity roleEntity;
     @InjectMocks
     private LocationEntity locationEntity;
@@ -157,4 +167,30 @@ public class ShowGameForPlayerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
+    @Test
+    public void should_show_game_info_to_user() throws Exception {
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        GameEntity game = new GameEntity(userEntity, Date.from(Instant.EPOCH), locationEntity,
+                Collections.singletonMap("User", roleEntity));
+        game.setGameStarted(true);
+        game.setGameDisabled(false);
+
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
+
+        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(userEntity);
+        Mockito.when(gameRepository.findById(Mockito.anyString())).thenReturn(Optional.of(game));
+        Mockito.when(userEntity.getUsername()).thenReturn("User");
+
+        PlayerGameInfoResponseDto responseDto = new PlayerGameInfoResponseDto(Response.MessageType.INFO,
+                ResponseMessages.GAME_PLAYER_INFO, roleEntity, locationEntity, Date.from(Instant.EPOCH));
+
+        mockMvc.perform(get(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_START + "/" + gameId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(responseDto)));
+    }
 }

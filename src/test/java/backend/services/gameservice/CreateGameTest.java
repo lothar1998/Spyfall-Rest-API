@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -134,15 +135,21 @@ public class CreateGameTest {
     public void should_occur_database_error_caused_by_game_location_not_found() throws Exception {
         GameCreationDto request = new GameCreationDto(locationEntity);
 
-        ExceptionResponse response = new ExceptionResponse(Response.MessageType.ERROR, ExceptionMessages.DATABASE_ERROR,
-                ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+        ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING, ExceptionMessages.LOCATION_NOT_FOUND,
+                ExceptionDescriptions.NOT_FOUND, HttpStatus.NOT_FOUND);
 
-        Mockito.when(locationRepository.findById(Mockito.any())).thenReturn(null);
+        Mockito.when(parser.parse(Mockito.anyString())).thenAnswer((Answer<String>) invocation -> {
+            Object[] args = invocation.getArguments();
+            return usernameParser.parse((String) args[0]);
+        });
+
+        Mockito.when(userRepository.findUserByUsername(Mockito.anyString())).thenReturn(new UserEntity());
+        Mockito.when(locationRepository.findById(Mockito.any())).thenReturn(Optional.empty());
 
         mockMvc.perform(post(ContextPaths.GAME_MAIN_CONTEXT + ContextPaths.GAME_CREATE)
                 .contentType(MediaType.APPLICATION_JSON_UTF8).content(objectMapper.writeValueAsString(request))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isInternalServerError()).andExpect(content().json(objectMapper.writeValueAsString(response)));
+                .andExpect(status().isNotFound()).andExpect(content().json(objectMapper.writeValueAsString(response)));
     }
 
     @Test
