@@ -123,11 +123,11 @@ public class GameService {
      * @param id Id of a game
      * @return game details
      * @throws NotFoundException occur when game is not found in database
-     * @throws GameInProgressException occur when game is in progress
+     * @throws GameActionForbiddenException occur when game is in progress
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @GetMapping(ContextPaths.GAME_ID)
-    public ResponseEntity getGameLobby(@PathVariable String id) throws NotFoundException, GameInProgressException {
+    public ResponseEntity getGameLobby(@PathVariable String id) throws NotFoundException, GameActionForbiddenException {
 
         GameEntity game = checkGameCorrectness(id);
         isGameInProgress(game);
@@ -149,7 +149,7 @@ public class GameService {
     @Secured({UsersRoles.USER, UsersRoles.ADMIN})
     @GetMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
     public ResponseEntity getGameByPlayer(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String header,
-                                          @PathVariable String id) throws DatabaseException, NotFoundException, GameFinishedException, GameNotStartedYetException {
+                                          @PathVariable String id) throws DatabaseException, NotFoundException, GameActionForbiddenException {
 
         UserEntity user = checkUserCorrectness(header);
         GameEntity game = checkGameCorrectness(id);
@@ -224,13 +224,13 @@ public class GameService {
      * @return response with edited game
      * @throws NotFoundException      occurs if there is no game with given id
      * @throws DatabaseException      occurs if saving or loading data from database are wrong
-     * @throws AlreadyInGameException occurs if user has already joined the game
+     * @throws GameActionForbiddenException occurs if user has already joined the game
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PutMapping(ContextPaths.GAME_JOIN + ContextPaths.GAME_ID)
     public ResponseEntity addPlayerToGame(@PathVariable String id,
                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header
-    ) throws NotFoundException, DatabaseException, AlreadyInGameException, JoiningToGameDisabledException {
+    ) throws NotFoundException, DatabaseException, GameActionForbiddenException, PermissionDeniedException {
 
         GameEntity game = checkGameCorrectness(id);
         UserEntity player = checkUserCorrectness(header);
@@ -258,7 +258,7 @@ public class GameService {
     @PutMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     public ResponseEntity startGame(@PathVariable String id,
-                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws NotFoundException, DatabaseException, TooManyPlayersException, PermissionDeniedException, GameHasAlreadyStartedException {
+                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header) throws NotFoundException, DatabaseException, TooManyPlayersException, PermissionDeniedException, GameActionForbiddenException {
 
         GameEntity game = checkGameCorrectness(id);
         UserEntity host = checkUserCorrectness(header);
@@ -314,12 +314,12 @@ public class GameService {
      * @throws NotFoundException          occurs if there is no game with given id
      * @throws DatabaseException          occurs if saving or loading data from database are wrong
      * @throws PermissionDeniedException  occurs if player don't have permission to modify resource
-     * @throws GameNotStartedYetException occurs if game is not started yet
+     * @throws GameActionForbiddenException occurs if game is not started yet
      */
     @Secured({UsersRoles.USER, UsersRoles.ADMIN})
     @PutMapping(ContextPaths.GAME_FINISH + ContextPaths.GAME_ID)
     public ResponseEntity finishGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
-            throws NotFoundException, DatabaseException, PermissionDeniedException, GameNotStartedYetException {
+            throws NotFoundException, DatabaseException, PermissionDeniedException, GameActionForbiddenException {
 
         GameEntity game = checkGameCorrectness(id);
         UserEntity host = checkUserCorrectness(header);
@@ -349,7 +349,7 @@ public class GameService {
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @DeleteMapping(ContextPaths.GAME_ID)
     public ResponseEntity deleteExistingGame(@PathVariable String id, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String header)
-            throws NotFoundException, DatabaseException, PermissionDeniedException, GameHasAlreadyStartedException {
+            throws NotFoundException, DatabaseException, PermissionDeniedException, GameActionForbiddenException {
         GameEntity game = checkGameCorrectness(id);
         UserEntity user = checkUserCorrectness(header);
         checkUserPermissions(user, game);
@@ -440,61 +440,67 @@ public class GameService {
      *
      * @param player user to check
      * @param game   game to check
-     * @throws AlreadyInGameException occurs if player is already in game
+     * @throws GameActionForbiddenException occurs if player is already in game
      * @author Kamil Kalis
      */
-    private void isPlayerAlreadyInGame(UserEntity player, GameEntity game) throws AlreadyInGameException {
+    private void isPlayerAlreadyInGame(UserEntity player, GameEntity game) throws GameActionForbiddenException {
         if (game.getPlayersWithRoles().containsKey(player.getUsername()))
-            throw new AlreadyInGameException(ExceptionMessages.PLAYER_ALREADY_IN_GAME);
+            throw new GameActionForbiddenException(ExceptionMessages.PLAYER_ALREADY_IN_GAME);
     }
 
     /**
      * check whether player can join the game before its start
      *
      * @param game Game to join
-     * @throws JoiningToGameDisabledException occurs when player can't join the game
+     * @throws PermissionDeniedException occurs when player can't join the game
      */
-    private void isJoiningToGameDisabled(GameEntity game) throws JoiningToGameDisabledException {
+    private void isJoiningToGameDisabled(GameEntity game) throws PermissionDeniedException {
         if (game.isDisabledJoin())
-            throw new JoiningToGameDisabledException(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
+            throw new PermissionDeniedException(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
     }
 
     /**
      * check if game has already started
      *
      * @param game game from DB to check
-     * @throws GameHasAlreadyStartedException occurs when host already started the game
+     * @throws GameActionForbiddenException occurs when host already started the game
      */
-    private void isGameStarted(GameEntity game) throws GameHasAlreadyStartedException {
+    private void isGameStarted(GameEntity game) throws GameActionForbiddenException {
         if (game.isGameStarted())
-            throw new GameHasAlreadyStartedException(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
+            throw new GameActionForbiddenException(ExceptionMessages.GAME_HAS_ALREADY_STARTED);
     }
 
     /**
      * check if game doesn't yet started
      *
      * @param game game from DB to check
-     * @throws GameNotStartedYetException occurs when game not started
+     * @throws GameActionForbiddenException occurs when game not started
      */
-    private void isGameNotStarted(GameEntity game) throws GameNotStartedYetException {
+    private void isGameNotStarted(GameEntity game) throws GameActionForbiddenException {
         if (!game.isGameStarted())
-            throw new GameNotStartedYetException(ExceptionMessages.GAME_NOT_STARTED_YET);
+            throw new GameActionForbiddenException(ExceptionMessages.GAME_NOT_STARTED_YET);
     }
 
     /**
      * check if game is in progress
      *
      * @param game game to check
-     * @throws GameInProgressException occurs when game is in progress
+     * @throws GameActionForbiddenException occurs when game is in progress
      */
-    private void isGameInProgress(GameEntity game) throws GameInProgressException {
+    private void isGameInProgress(GameEntity game) throws GameActionForbiddenException {
         if (!game.isGameDisabled() && game.isGameStarted())
-            throw new GameInProgressException(ExceptionMessages.GAME_IN_PROGRESS);
+            throw new GameActionForbiddenException(ExceptionMessages.GAME_IN_PROGRESS);
     }
 
-    private void isGameFinished(GameEntity game) throws GameFinishedException {
+    /**
+     * check if game has finished
+     *
+     * @param game game to check
+     * @throws GameActionForbiddenException occurs when game has finished
+     */
+    private void isGameFinished(GameEntity game) throws GameActionForbiddenException {
         if (game.isGameDisabled() && !game.isGameStarted())
-            throw new GameFinishedException(ExceptionMessages.GAME_FINISHED);
+            throw new GameActionForbiddenException(ExceptionMessages.GAME_FINISHED);
     }
 
     /**

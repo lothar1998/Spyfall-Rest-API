@@ -2,7 +2,7 @@ package backend.exceptions;
 
 import backend.config.logs.ErrorLog;
 import backend.config.logs.WarningLog;
-import backend.exceptions.game.GameInProgressException;
+import backend.exceptions.game.*;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import org.springframework.http.HttpHeaders;
@@ -15,7 +15,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ValidationException;
-//TODO: handle exceptions
 /**
  * controller exceptions handlers
  *
@@ -51,9 +50,17 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
         return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
-    @ExceptionHandler(value = GameInProgressException.class)
-    public ResponseEntity handleGameInProgressException(Exception exception, WebRequest request) {
-        ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.WARNING, exception.getMessage(), ExceptionDescriptions.BAD_REQUEST, HttpStatus.FORBIDDEN);
+    @WarningLog
+    @ExceptionHandler(value = GameActionForbiddenException.class)
+    public ResponseEntity handleGameActionForbiddenException(Exception exception, WebRequest request) {
+        ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.WARNING, exception.getMessage(), ExceptionDescriptions.PERMISSION_DENIED, HttpStatus.FORBIDDEN);
+        return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ErrorLog
+    @ExceptionHandler(value = TooManyPlayersException.class)
+    public ResponseEntity handleTooManyPlayers(Exception exception, WebRequest request) {
+        ExceptionResponse bodyOfResponse = new ExceptionResponse(Response.MessageType.ERROR, exception.getMessage(), ExceptionDescriptions.INTERNAL_SERVER_ERROR, HttpStatus.FORBIDDEN);
         return handleExceptionInternal(exception, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 }

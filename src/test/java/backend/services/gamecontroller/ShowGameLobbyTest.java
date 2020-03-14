@@ -90,7 +90,7 @@ public class ShowGameLobbyTest {
     @Test
     public void should_occur_game_in_progress_exception() throws Exception {
         ExceptionResponse response = new ExceptionResponse(Response.MessageType.WARNING,
-                ExceptionMessages.GAME_IN_PROGRESS, ExceptionDescriptions.BAD_REQUEST, HttpStatus.FORBIDDEN);
+                ExceptionMessages.GAME_IN_PROGRESS, ExceptionDescriptions.PERMISSION_DENIED, HttpStatus.FORBIDDEN);
 
         GameEntity gameEntity = new GameEntity(user, Date.from(Instant.EPOCH), locationEntity,
                 Collections.singletonMap("User", new RoleEntity()));
