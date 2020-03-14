@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 import java.util.*;
-//TODO: Check docs
 /**
  * REST controller for Game queries
  *
@@ -122,7 +121,7 @@ public class GameService {
      *
      * @param id Id of a game
      * @return game details
-     * @throws NotFoundException occur when game is not found in database
+     * @throws NotFoundException            occur when game is not found in database
      * @throws GameActionForbiddenException occur when game is in progress
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
@@ -143,9 +142,9 @@ public class GameService {
      * @param header JWT authorization bearer token
      * @param id     id of a game
      * @return specific info for player
-     * @throws DatabaseException occur when player is not found in database
-     * @throws NotFoundException occur when game is not found in database
-     * @throws GameActionForbiddenException occur when action cannot been performed due to state of game
+     * @throws DatabaseException            occurs when player is not found in database
+     * @throws NotFoundException            occurs when game is not found in database
+     * @throws GameActionForbiddenException occurs when action cannot be performed due to state of the game
      */
     @Secured({UsersRoles.USER, UsersRoles.ADMIN})
     @GetMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
@@ -222,10 +221,10 @@ public class GameService {
      * @param id     ID of game to update
      * @param header JWT authorization bearer token
      * @return response with edited game
-     * @throws NotFoundException      occurs if there is no game with given id
-     * @throws DatabaseException      occurs if saving or loading data from database are wrong
+     * @throws NotFoundException            occurs if there is no game with given id
+     * @throws DatabaseException            occurs if saving or loading data from database are wrong
      * @throws GameActionForbiddenException occurs if user has already joined the game
-     * @throws PermissionDeniedException occurs when user tries to enter game while its disabled
+     * @throws PermissionDeniedException    occurs when user tries to enter game while its disabled
      */
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
     @PutMapping(ContextPaths.GAME_JOIN + ContextPaths.GAME_ID)
@@ -254,8 +253,11 @@ public class GameService {
      * @param id     id of a game to start
      * @param header authorization JWT header
      * @return response with started game
-     * @throws NotFoundException occurs if there is no game with given id
-     * //TODO: add exceptions
+     * @throws NotFoundException            occurs if there is no game with given id
+     * @throws DatabaseException            occurs if saving or loading data from database are wrong
+     * @throws TooManyPlayersException      occurs when there are not enough roles in a location to assign for each player
+     * @throws PermissionDeniedException    occurs when a user is trying to perform an action on the resource which he does not own
+     * @throws GameActionForbiddenException occurs when action cannot be performed due to state of the game
      */
     @PutMapping(ContextPaths.GAME_START + ContextPaths.GAME_ID)
     @Secured({UsersRoles.ADMIN, UsersRoles.USER})
@@ -362,7 +364,6 @@ public class GameService {
             RoleEntity spy = roleRepository.findByName("Spy");
             roleRepository.delete(spy);
         }
-
         isGameStarted(game);
 
         gameRepository.delete(game);
