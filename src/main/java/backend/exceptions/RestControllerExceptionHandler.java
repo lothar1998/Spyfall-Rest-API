@@ -2,7 +2,6 @@ package backend.exceptions;
 
 import backend.config.logs.ErrorLog;
 import backend.config.logs.WarningLog;
-import backend.exceptions.game.*;
 import backend.models.response.ExceptionResponse;
 import backend.models.response.Response;
 import org.springframework.http.HttpHeaders;
