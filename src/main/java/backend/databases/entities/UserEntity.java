@@ -2,6 +2,7 @@ package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.Date;
 @Setter
 @EqualsAndHashCode
 @NoArgsConstructor
+@JsonIgnoreProperties(value = { "target" })
 public class UserEntity {
 
     @Id
