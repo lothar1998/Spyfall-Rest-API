@@ -2,6 +2,7 @@ package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -23,6 +24,7 @@ import java.util.List;
 @Document(collection = "locations")
 @NoArgsConstructor
 @Data
+@JsonIgnoreProperties(value = { "target" })
 public class LocationEntity {
 
     @Id

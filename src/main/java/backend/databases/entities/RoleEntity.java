@@ -2,6 +2,7 @@ package backend.databases.entities;
 
 import backend.config.startup.StartupConfig;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -20,6 +21,7 @@ import javax.validation.constraints.Size;
 @Document(collection = "roles")
 @NoArgsConstructor
 @Data
+@JsonIgnoreProperties(value = { "target" })
 public class RoleEntity {
 
     @Id
