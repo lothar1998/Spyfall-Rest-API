@@ -39,7 +39,7 @@ To deploy a whole system use docker-compose:
 * [Spring](https://spring.io/) – Main framework used to build app
 * [Gradle](https://gradle.org/) – Dependency Management
 * [MongoDB](https://www.mongodb.com/) – Database
-* [Docker](docker.com) – used to provide an easy way to deploy
+* [Docker](https://www.docker.com/) – used to provide an easy way to deploy
 * [JWT Token](https://jwt.io/) – used to authenticate users
 * [OAuth2](https://oauth.net/2/) – custom authorization server
 
