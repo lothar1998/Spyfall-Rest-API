@@ -81,7 +81,7 @@ paths:
         required: true
         x-send-file-in-body: false
       responses:
-        200:
+        201:
           description: 'User has been created'
           headers: {}
           content:
@@ -204,27 +204,61 @@ paths:
       tags:
         - Location
       summary: Create Location
-      operationId: CreateLocation
-      parameters: []
+      operationId: Create Location
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateLocationRequest'
+              $ref: '#/components/schemas/LocationObject'
             example:
-              name: Jagiellonium Universitetum
-              description: Uniwersytet Jagielloński
+              name: string
+              description: string
               roles:
-                - name: Arechologia
-                  description: XDDDD
-                - name: Prawo
-                  description: Crossfit
+                - name: string
+                  description: string
         required: true
         x-send-file-in-body: false
       responses:
-        200:
-          description: ''
-          headers: {}
+        201:
+          description: 'Location has been created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateLocationResponseOk'
+
+        400:
+          description: 'Invalid properties'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
   /location/my_locations:
     get:
@@ -232,19 +266,63 @@ paths:
         - Location
       summary: List of all user's locations
       operationId: Listofalluser'slocations
-      parameters: []
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       responses:
         200:
-          description: ''
-          headers: {}
+          description: "Listed user's locations"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListLocationResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
       deprecated: false
-  /location/5d9bb4c3a7b11b0001d2adab:
+  /location/{location id}:
     get:
       tags:
         - Location
       summary: Get location by ID
       operationId: GetlocationbyID
-      parameters: []
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
+        - in: path
+          name: location id
+          required: true
+          schema:
+            type: string
+          description: Id of the location
+          example: location id
       responses:
         200:
           description: ''
@@ -255,13 +333,34 @@ paths:
         - Location
       summary: Delete location by ID
       operationId: DeletelocationbyID
-      parameters: []
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
+        - in: path
+          name: location id
+          required: true
+          schema:
+            type: string
+          description: Id of the location
+          example: location id
       responses:
         200:
           description: ''
           headers: {}
       deprecated: false
-  /location/5d8bb73f6344590001feffd3:
+  /location/das:
     put:
       tags:
         - Location
@@ -733,6 +832,63 @@ components:
           type: string
         message:
           type: string
+
+    ListLocationResponseOk:
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        locations:
+          $ref: '#/components/schemas/ArrayOfLocations'
+
+
+    ArrayOfLocations:
+      type: array
+      items:
+        allOf:
+          - $ref: '#/components/schemas/LocationObject'
+
+    CreateLocationResponseOk:
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        location:
+          $ref: '#/components/schemas/LocationObject'
+
+    LocationObject:
+      title: Location Object
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        roles:
+          $ref: '#/components/schemas/ArrayOfRoles'
+        date:
+          type: string
+
+    RoleObject:
+      title: Role Object
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+
+    ArrayOfRoles:
+      type: array
+      items:
+        allOf:
+          - $ref: '#/components/schemas/RoleObject'
 
 
   securitySchemes:
