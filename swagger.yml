@@ -165,11 +165,39 @@ paths:
         - User
       summary: List of users
       operationId: Listofusers
-      parameters: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'Listed all users'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListedUsersResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'Forbidden action'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
   /location/create:
     post:
@@ -626,6 +654,18 @@ components:
         jti:
           type: string
 
+
+    ListedUsersResponseOk:
+      title: Created user
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        signedUsers:
+          $ref: '#/components/schemas/ArrayOfUser'
+
     CreatedUserResponseOk:
       title: Created user
       type: object
@@ -656,6 +696,12 @@ components:
           type: string
         lastLogged:
           type: string
+
+    ArrayOfUser:
+      type: array
+      items:
+        allOf:
+          - $ref: '#/components/schemas/UserObject'
 
     ErrorResponse:
       title: Error response
