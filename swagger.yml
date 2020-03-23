@@ -139,7 +139,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasswordChangeResponseOk'
+                $ref: '#/components/schemas/ShortResponseOk'
         400:
           description: 'Invalid properties'
           content:
@@ -239,7 +239,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateLocationResponseOk'
+                $ref: '#/components/schemas/EditLocationResponseOk'
 
         400:
           description: 'Invalid properties'
@@ -267,13 +267,6 @@ paths:
       summary: List of all user's locations
       operationId: Listofalluser'slocations
       parameters:
-        - name: Content-Type
-          in: header
-          required: true
-          style: simple
-          schema:
-            type: string
-            example: application/json
         - name: Authorization
           in: header
           required: true
@@ -294,6 +287,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponseOauth'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
   /location/{location id}:
     get:
@@ -302,13 +301,6 @@ paths:
       summary: Get location by ID
       operationId: GetlocationbyID
       parameters:
-        - name: Content-Type
-          in: header
-          required: true
-          style: simple
-          schema:
-            type: string
-            example: application/json
         - name: Authorization
           in: header
           required: true
@@ -325,14 +317,76 @@ paths:
           example: location id
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'Listed location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditLocationResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        404:
+          description: 'Resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
     delete:
       tags:
         - Location
       summary: Delete location by ID
       operationId: DeletelocationbyID
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
+        - in: path
+          name: location id
+          required: true
+          schema:
+            type: string
+          description: Id of the location
+          example: location id
+      responses:
+        200:
+          description: 'Location has been deleted'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponseOk'
+        403:
+          description: 'Forbidden action'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: 'Resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+  /location/{location id}}:
+    put:
+      tags:
+        - Location
+      summary: Edit location
+      operationId: Editlocation
       parameters:
         - name: Content-Type
           in: header
@@ -355,39 +409,30 @@ paths:
             type: string
           description: Id of the location
           example: location id
-      responses:
-        200:
-          description: ''
-          headers: {}
-      deprecated: false
-  /location/das:
-    put:
-      tags:
-        - Location
-      summary: Edit location
-      operationId: Editlocation
-      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditlocationRequest'
+              $ref: '#/components/schemas/LocationObject'
             example:
-              name: Jagiellonium Universitetum
-              description: Wariaty
+              name: string
+              description: string
               roles:
-                - name: a
-                  description: idiota
-                - name: Prawo
-                  description: Edit
-                - name: Prof 3
-                  description: idiota3
+                - name: string
+                  description: string
+                - name: string
+                  description: string
+                - name: string
+                  description: string
         required: true
         x-send-file-in-body: false
       responses:
-        200:
-          description: ''
-          headers: {}
+        201:
+          description: 'Location has been edited'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditLocationResponseOk'
       deprecated: false
   /game/create:
     post:
@@ -824,7 +869,7 @@ components:
         error_description:
           type: string
 
-    PasswordChangeResponseOk:
+    ShortResponseOk:
       title: Change ok
       type: object
       properties:
@@ -849,7 +894,7 @@ components:
         allOf:
           - $ref: '#/components/schemas/LocationObject'
 
-    CreateLocationResponseOk:
+    EditLocationResponseOk:
       properties:
         type:
           type: string
