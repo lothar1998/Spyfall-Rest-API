@@ -387,7 +387,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
-  /location/{locationId}}:
     put:
       tags:
         - Location
@@ -653,6 +652,61 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
       deprecated: false
+
+    delete:
+      tags:
+        - Game
+      summary: Delete game by ID
+      operationId: DeletegamebyID
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+          description: Id of the game
+          example: Game ID
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
+      responses:
+        200:
+          description: 'Game has been deleted'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'Action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+
+        404:
+          description: 'Resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+
   /game/start/{gameId}:
     get:
       tags:
@@ -708,7 +762,62 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
-  /game/join/5e778462a7b11b0001612e8a:
+    put:
+      tags:
+        - Game
+      summary: Start the game
+      operationId: StartGame
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+          description: Id of the game
+          example: Game ID
+      responses:
+        200:
+          description: 'Game has started'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponseOk'
+
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+
+        404:
+          description: 'resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      deprecated: false
+
+  /game/join/{gameId}:
     put:
       tags:
         - Game
@@ -722,12 +831,56 @@ paths:
           schema:
             type: string
             example: application/json
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+          description: Id of the game
+          example: Game ID
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'New player has joined the game'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameResponseOk'
+
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+
+        404:
+          description: 'resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
-  /game/5dc4422163445900011814d5/location/5dc441f963445900011814cf:
+
+  /game/{gameId}/location/{locationId}:
     put:
       tags:
         - Game
@@ -741,31 +894,63 @@ paths:
           schema:
             type: string
             example: application/json
-      responses:
-        200:
-          description: ''
-          headers: {}
-      deprecated: false
-  /game/start/5e778462a7b11b0001612e8a:
-    put:
-      tags:
-        - Game
-      summary: Start Game
-      operationId: StartGame
-      parameters:
-        - name: Content-Type
+        - name: Authorization
           in: header
           required: true
           style: simple
           schema:
             type: string
-            example: application/json
+            example: Bearer {token}
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+          description: Id of the game
+          example: Game ID
+        - in: path
+          name: locationId
+          required: true
+          schema:
+            type: string
+          description: Id of the location
+          example: Location ID
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'Game location has changed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameResponseOk'
+
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+
+        404:
+          description: 'resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
-  /game/finish/5e778462a7b11b0001612e8a:
+
+  /game/finish/{gameId}:
     put:
       tags:
         - Game
@@ -779,23 +964,48 @@ paths:
           schema:
             type: string
             example: application/json
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+          description: Id of the game
+          example: Game ID
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'Game location has changed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponseOk'
+
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+
+        404:
+          description: 'resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
-  /game/5e778462a7b11b0001612e8a:
-    delete:
-      tags:
-        - Game
-      summary: Delete game by ID
-      operationId: DeletegamebyID
-      parameters: []
-      responses:
-        200:
-          description: ''
-          headers: {}
-      deprecated: false
+
 components:
   schemas:
     CreateuserRequest:
@@ -833,120 +1043,7 @@ components:
       example:
         oldPassword: string
         newPassword: string
-    CreateLocationRequest:
-      title: CreateLocationRequest
-      required:
-        - name
-        - description
-        - roles
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/Role'
-      example:
-        name: Jagiellonium Universitetum
-        description: Uniwersytet Jagielloński
-        roles:
-          - name: Arechologia
-            description: XDDDD
-          - name: Prawo
-            description: Crossfit
-    Role:
-      title: Role
-      required:
-        - name
-        - description
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-      example:
-        name: Arechologia
-        description: XDDDD
-    EditlocationRequest:
-      title: EditlocationRequest
-      required:
-        - name
-        - description
-        - roles
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/Role'
-      example:
-        name: Jagiellonium Universitetum
-        description: Wariaty
-        roles:
-          - name: a
-            description: idiota
-          - name: Prawo
-            description: Edit
-          - name: Prof 3
-            description: idiota3
-    CreateUJlocationRequest:
-      title: CreateUJlocationRequest
-      required:
-        - name
-        - description
-        - roles
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/Role'
-      example:
-        name: Jagiellonium Universitetum
-        description: Uniwersytet Jagielloński
-        roles:
-          - name: Arechologia
-            description: XDDDD
-          - name: Prawo
-            description: Crossfit
-    CreateotherlocationRequest:
-      title: CreateotherlocationRequest
-      required:
-        - name
-        - description
-        - roles
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/Role'
-      example:
-        name: Comarch
-        description: McDonald dla Programistow XDD
-        roles:
-          - name: Janusz
-            description: XDDDD
-          - name: Kumarch
-            description: staz
-          - name: Cos
-            description: trzecie
+
     CreategameRequest:
       title: CreategameRequest
       required:
@@ -968,24 +1065,6 @@ components:
           type: string
       example:
         id: 55e778446a7b11b0001612e89
-    CreatenewuserRequest:
-      title: CreatenewuserRequest
-      required:
-        - username
-        - password
-        - email
-      type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
-        email:
-          type: string
-      example:
-        username: janko123
-        password: janko123
-        email: wadsars@janko.pl
 
     TokenResponse:
       title: Access token
