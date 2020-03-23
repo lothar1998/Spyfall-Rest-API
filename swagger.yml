@@ -43,7 +43,6 @@ paths:
       responses:
         200:
           description: 'Response with valid granted token'
-          headers: {}
           content:
             application/json:
               schema:
@@ -83,14 +82,20 @@ paths:
         x-send-file-in-body: false
       responses:
         200:
-          description: 'user has been created'
+          description: 'User has been created'
           headers: {}
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatedUserResponseOk'
         400:
-          description: 'user already exists'
+          description: 'Invialid properties'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
           content:
             application/json:
               schema:
@@ -102,22 +107,57 @@ paths:
       tags:
         - User
       summary: Change password
-      operationId: Changepassword
-      parameters: []
+      operationId: Change password
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ChangepasswordRequest'
             example:
-              oldPassword: adminadmin
-              newPassword: zaq1@WSX
+              oldPassword: string
+              newPassword: string
         required: true
         x-send-file-in-body: false
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'Password has been changed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordChangeResponseOk'
+        400:
+          description: 'Invalid properties'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
   /user/all:
     get:
@@ -404,7 +444,7 @@ components:
         password: string
         email: string
     ChangepasswordRequest:
-      title: ChangepasswordRequest
+      title: Change password
       required:
         - oldPassword
         - newPassword
@@ -415,8 +455,8 @@ components:
         newPassword:
           type: string
       example:
-        oldPassword: adminadmin
-        newPassword: zaq1@WSX
+        oldPassword: string
+        newPassword: string
     CreateLocationRequest:
       title: CreateLocationRequest
       required:
@@ -637,6 +677,15 @@ components:
         error:
           type: string
         error_description:
+          type: string
+
+    PasswordChangeResponseOk:
+      title: Change ok
+      type: object
+      properties:
+        type:
+          type: string
+        message:
           type: string
 
 
