@@ -1,554 +1,554 @@
-swagger: '2.0'
+openapi: 3.0.0
 info:
-  version: '1.0'
   title: Project-X
   contact: {}
-host: localhost:9090
-basePath: /
-securityDefinitions:
-  auth:
-    type: basic
-schemes:
-- http
-consumes:
-- application/json
-produces:
-- application/json
+  version: '1.0'
+servers:
+  - url: http://localhost:9090
+    variables: {}
 paths:
   /oauth/token:
     post:
-      summary: Get Token
       tags:
-      - User
+        - User
+      summary: Get Token
       operationId: GetToken
-      deprecated: false
-      produces:
-      - application/json
-      consumes:
-      - application/x-www-form-urlencoded
       parameters:
-      - name: Content-Type
-        in: header
-        required: true
-        type: string
-      - name: grant_type
-        in: formData
-        required: true
-        type: string
-      - name: username
-        in: formData
-        required: true
-        type: string
-      - name: password
-        in: formData
-        required: true
-        type: string
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/x-www-form-urlencoded
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            encoding: {}
+            schema:
+              required:
+                - grant_type
+                - username
+                - password
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  example: password
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: adminadmin
+        required: false
+        x-send-file-in-body: false
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /user/create:
     post:
-      summary: Create user
       tags:
-      - User
+        - User
+      summary: Create user
       operationId: Createuser
-      deprecated: false
-      produces:
-      - application/json
-      parameters:
-      - name: Content-Type
-        in: header
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateuserRequest'
+            example:
+              username: janko123
+              password: janko123
+              email: wadsars@janko.pl
         required: true
-        type: string
-      - name: Body
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/CreateuserRequest'
+        x-send-file-in-body: false
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /user/password:
     post:
-      summary: Change password
       tags:
-      - User
+        - User
+      summary: Change password
       operationId: Changepassword
-      deprecated: false
-      produces:
-      - application/json
-      parameters:
-      - name: Content-Type
-        in: header
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangepasswordRequest'
+            example:
+              oldPassword: adminadmin
+              newPassword: zaq1@WSX
         required: true
-        type: string
-      - name: Body
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/ChangepasswordRequest'
+        x-send-file-in-body: false
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /user/all:
     get:
-      summary: List of users
       tags:
-      - User
+        - User
+      summary: List of users
       operationId: Listofusers
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /location/create:
     post:
-      summary: Create Location
       tags:
-      - Location
+        - Location
+      summary: Create Location
       operationId: CreateLocation
-      deprecated: false
-      produces:
-      - application/json
-      parameters:
-      - name: Content-Type
-        in: header
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLocationRequest'
+            example:
+              name: Jagiellonium Universitetum
+              description: Uniwersytet Jagielloński
+              roles:
+                - name: Arechologia
+                  description: XDDDD
+                - name: Prawo
+                  description: Crossfit
         required: true
-        type: string
-      - name: Body
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/CreateLocationRequest'
+        x-send-file-in-body: false
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /location/my_locations:
     get:
-      summary: List of all user's locations
       tags:
-      - Location
+        - Location
+      summary: List of all user's locations
       operationId: Listofalluser'slocations
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /location/5d9bb4c3a7b11b0001d2adab:
     get:
+      tags:
+        - Location
       summary: Get location by ID
-      tags:
-      - Location
       operationId: GetlocationbyID
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
     delete:
-      summary: Delete location by ID
       tags:
-      - Location
+        - Location
+      summary: Delete location by ID
       operationId: DeletelocationbyID
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /location/5d8bb73f6344590001feffd3:
     put:
-      summary: Edit location
       tags:
-      - Location
+        - Location
+      summary: Edit location
       operationId: Editlocation
-      deprecated: false
-      produces:
-      - application/json
-      parameters:
-      - name: Content-Type
-        in: header
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditlocationRequest'
+            example:
+              name: Jagiellonium Universitetum
+              description: Wariaty
+              roles:
+                - name: a
+                  description: idiota
+                - name: Prawo
+                  description: Edit
+                - name: Prof 3
+                  description: idiota3
         required: true
-        type: string
-      - name: Body
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/EditlocationRequest'
+        x-send-file-in-body: false
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/create:
     post:
-      summary: Create game
       tags:
-      - Game
+        - Game
+      summary: Create game
       operationId: Creategame
-      deprecated: false
-      produces:
-      - application/json
-      parameters:
-      - name: Content-Type
-        in: header
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreategameRequest'
+            example:
+              location:
+                id: 55e778446a7b11b0001612e89
         required: true
-        type: string
-      - name: Body
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/CreategameRequest'
+        x-send-file-in-body: false
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/all:
     get:
-      summary: Get list of games
       tags:
-      - Game
+        - Game
+      summary: Get list of games
       operationId: Getlistofgames
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/all/user:
     get:
-      summary: Get list of user games
       tags:
-      - Game
+        - Game
+      summary: Get list of user games
       operationId: Getlistofusergames
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/5dc44518410df80001a88ddd:
     get:
-      summary: Get game by ID
       tags:
-      - Game
+        - Game
+      summary: Get game by ID
       operationId: GetgamebyID
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/start/5dc44518410df80001a88ddd:
     get:
-      summary: Get finished game by ID
       tags:
-      - Game
+        - Game
+      summary: Get finished game by ID
       operationId: GetfinishedgamebyID
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/join/5e778462a7b11b0001612e8a:
     put:
-      summary: Add new player to game
       tags:
-      - Game
+        - Game
+      summary: Add new player to game
       operationId: Addnewplayertogame
-      deprecated: false
-      produces:
-      - application/json
       parameters:
-      - name: Content-Type
-        in: header
-        required: true
-        type: string
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/5dc4422163445900011814d5/location/5dc441f963445900011814cf:
     put:
-      summary: Change game location
       tags:
-      - Game
+        - Game
+      summary: Change game location
       operationId: Changegamelocation
-      deprecated: false
-      produces:
-      - application/json
       parameters:
-      - name: Content-Type
-        in: header
-        required: true
-        type: string
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/start/5e778462a7b11b0001612e8a:
     put:
-      summary: Start Game
       tags:
-      - Game
+        - Game
+      summary: Start Game
       operationId: StartGame
-      deprecated: false
-      produces:
-      - application/json
       parameters:
-      - name: Content-Type
-        in: header
-        required: true
-        type: string
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/finish/5e778462a7b11b0001612e8a:
     put:
-      summary: Finish Game
       tags:
-      - Game
+        - Game
+      summary: Finish Game
       operationId: FinishGame
-      deprecated: false
-      produces:
-      - application/json
       parameters:
-      - name: Content-Type
-        in: header
-        required: true
-        type: string
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
       responses:
         200:
           description: ''
           headers: {}
+      deprecated: false
   /game/5e778462a7b11b0001612e8a:
     delete:
-      summary: Delete game by ID
       tags:
-      - Game
+        - Game
+      summary: Delete game by ID
       operationId: DeletegamebyID
-      deprecated: false
-      produces:
-      - application/json
       parameters: []
       responses:
         200:
           description: ''
           headers: {}
-definitions:
-  CreateuserRequest:
-    title: CreateuserRequest
-    example:
-      username: janko123
-      password: janko123
-      email: wadsars@janko.pl
-    type: object
-    properties:
-      username:
-        type: string
-      password:
-        type: string
-      email:
-        type: string
-    required:
-    - username
-    - password
-    - email
-  ChangepasswordRequest:
-    title: ChangepasswordRequest
-    example:
-      oldPassword: adminadmin
-      newPassword: zaq1@WSX
-    type: object
-    properties:
-      oldPassword:
-        type: string
-      newPassword:
-        type: string
-    required:
-    - oldPassword
-    - newPassword
-  CreateLocationRequest:
-    title: CreateLocationRequest
-    example:
-      name: Jagiellonium Universitetum
-      description: Uniwersytet Jagielloński
-      roles:
-      - name: Arechologia
+      deprecated: false
+components:
+  schemas:
+    CreateuserRequest:
+      title: CreateuserRequest
+      required:
+        - username
+        - password
+        - email
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+      example:
+        username: janko123
+        password: janko123
+        email: wadsars@janko.pl
+    ChangepasswordRequest:
+      title: ChangepasswordRequest
+      required:
+        - oldPassword
+        - newPassword
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+      example:
+        oldPassword: adminadmin
+        newPassword: zaq1@WSX
+    CreateLocationRequest:
+      title: CreateLocationRequest
+      required:
+        - name
+        - description
+        - roles
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+      example:
+        name: Jagiellonium Universitetum
+        description: Uniwersytet Jagielloński
+        roles:
+          - name: Arechologia
+            description: XDDDD
+          - name: Prawo
+            description: Crossfit
+    Role:
+      title: Role
+      required:
+        - name
+        - description
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      example:
+        name: Arechologia
         description: XDDDD
-      - name: Prawo
-        description: Crossfit
-    type: object
-    properties:
-      name:
-        type: string
-      description:
-        type: string
-      roles:
-        type: array
-        items:
-          $ref: '#/definitions/Role'
-    required:
-    - name
-    - description
-    - roles
-  Role:
-    title: Role
-    example:
-      name: Arechologia
-      description: XDDDD
-    type: object
-    properties:
-      name:
-        type: string
-      description:
-        type: string
-    required:
-    - name
-    - description
-  EditlocationRequest:
-    title: EditlocationRequest
-    example:
-      name: Jagiellonium Universitetum
-      description: Wariaty
-      roles:
-      - name: a
-        description: idiota
-      - name: Prawo
-        description: Edit
-      - name: Prof 3
-        description: idiota3
-    type: object
-    properties:
-      name:
-        type: string
-      description:
-        type: string
-      roles:
-        type: array
-        items:
-          $ref: '#/definitions/Role'
-    required:
-    - name
-    - description
-    - roles
-  CreateUJlocationRequest:
-    title: CreateUJlocationRequest
-    example:
-      name: Jagiellonium Universitetum
-      description: Uniwersytet Jagielloński
-      roles:
-      - name: Arechologia
-        description: XDDDD
-      - name: Prawo
-        description: Crossfit
-    type: object
-    properties:
-      name:
-        type: string
-      description:
-        type: string
-      roles:
-        type: array
-        items:
-          $ref: '#/definitions/Role'
-    required:
-    - name
-    - description
-    - roles
-  CreateotherlocationRequest:
-    title: CreateotherlocationRequest
-    example:
-      name: Comarch
-      description: McDonald dla Programistow XDD
-      roles:
-      - name: Janusz
-        description: XDDDD
-      - name: Kumarch
-        description: staz
-      - name: Cos
-        description: trzecie
-    type: object
-    properties:
-      name:
-        type: string
-      description:
-        type: string
-      roles:
-        type: array
-        items:
-          $ref: '#/definitions/Role'
-    required:
-    - name
-    - description
-    - roles
-  CreategameRequest:
-    title: CreategameRequest
-    example:
-      location:
+    EditlocationRequest:
+      title: EditlocationRequest
+      required:
+        - name
+        - description
+        - roles
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+      example:
+        name: Jagiellonium Universitetum
+        description: Wariaty
+        roles:
+          - name: a
+            description: idiota
+          - name: Prawo
+            description: Edit
+          - name: Prof 3
+            description: idiota3
+    CreateUJlocationRequest:
+      title: CreateUJlocationRequest
+      required:
+        - name
+        - description
+        - roles
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+      example:
+        name: Jagiellonium Universitetum
+        description: Uniwersytet Jagielloński
+        roles:
+          - name: Arechologia
+            description: XDDDD
+          - name: Prawo
+            description: Crossfit
+    CreateotherlocationRequest:
+      title: CreateotherlocationRequest
+      required:
+        - name
+        - description
+        - roles
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+      example:
+        name: Comarch
+        description: McDonald dla Programistow XDD
+        roles:
+          - name: Janusz
+            description: XDDDD
+          - name: Kumarch
+            description: staz
+          - name: Cos
+            description: trzecie
+    CreategameRequest:
+      title: CreategameRequest
+      required:
+        - location
+      type: object
+      properties:
+        location:
+          $ref: '#/components/schemas/Location'
+      example:
+        location:
+          id: 55e778446a7b11b0001612e89
+    Location:
+      title: Location
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+      example:
         id: 55e778446a7b11b0001612e89
-    type: object
-    properties:
-      location:
-        $ref: '#/definitions/Location'
-    required:
-    - location
-  Location:
-    title: Location
-    example:
-      id: 55e778446a7b11b0001612e89
-    type: object
-    properties:
-      id:
-        type: string
-    required:
-    - id
-  CreatenewuserRequest:
-    title: CreatenewuserRequest
-    example:
-      username: janko123
-      password: janko123
-      email: wadsars@janko.pl
-    type: object
-    properties:
-      username:
-        type: string
-      password:
-        type: string
-      email:
-        type: string
-    required:
-    - username
-    - password
-    - email
+    CreatenewuserRequest:
+      title: CreatenewuserRequest
+      required:
+        - username
+        - password
+        - email
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+      example:
+        username: janko123
+        password: janko123
+        email: wadsars@janko.pl
+  securitySchemes:
+    httpBasic:
+      type: http
+      scheme: basic
 security:
-- auth: []
+  - httpBasic: []
 tags:
-- name: User
-- name: Location
-- name: Game
-  description: Endpoint requests for game service
+  - name: User
+  - name: Location
+  - name: Game
+    description: Endpoint requests for game service
