@@ -294,7 +294,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
-  /location/{location id}:
+  /location/{locationId}:
     get:
       tags:
         - Location
@@ -309,7 +309,7 @@ paths:
             type: string
             example: Bearer {token}
         - in: path
-          name: location id
+          name: locationId
           required: true
           schema:
             type: string
@@ -349,7 +349,7 @@ paths:
             type: string
             example: Bearer {token}
         - in: path
-          name: location id
+          name: locationId
           required: true
           schema:
             type: string
@@ -387,7 +387,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
-  /location/{location id}}:
+  /location/{locationId}}:
     put:
       tags:
         - Location
@@ -409,7 +409,7 @@ paths:
             type: string
             example: Bearer {token}
         - in: path
-          name: location id
+          name: locationId
           required: true
           schema:
             type: string
@@ -470,7 +470,21 @@ paths:
         - Game
       summary: Create game
       operationId: Creategame
-      parameters: []
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       requestBody:
         content:
           application/json:
@@ -478,13 +492,42 @@ paths:
               $ref: '#/components/schemas/CreategameRequest'
             example:
               location:
-                id: 55e778446a7b11b0001612e89
+                id: "string"
         required: true
         x-send-file-in-body: false
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'game has been created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameResponseOk'
+
+        400:
+          description: 'Invalid properties'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        404:
+          description: 'resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
       deprecated: false
   /game/all:
     get:
@@ -492,11 +535,33 @@ paths:
         - Game
       summary: Get list of games
       operationId: Getlistofgames
-      parameters: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'list of existing games'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameListResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
       deprecated: false
   /game/all/user:
     get:
@@ -504,35 +569,144 @@ paths:
         - Game
       summary: Get list of user games
       operationId: Getlistofusergames
-      parameters: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'user games found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameListResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
       deprecated: false
-  /game/5dc44518410df80001a88ddd:
+  /game/{gameId}:
     get:
       tags:
         - Game
       summary: Get game by ID
       operationId: GetgamebyID
-      parameters: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+          description: Id of the game
+          example: Game ID
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'game of corresponding id has been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+
+        404:
+          description: 'resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
       deprecated: false
-  /game/start/5dc44518410df80001a88ddd:
+  /game/start/{gameId}:
     get:
       tags:
         - Game
-      summary: Get finished game by ID
+      summary: Get started game by ID for player
       operationId: GetfinishedgamebyID
-      parameters: []
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+          description: Id of the game
+          example: Game ID
+        - name: Authorization
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: Bearer {token}
       responses:
         200:
-          description: ''
-          headers: {}
+          description: 'Info about the game for player'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameInfoOk'
+
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'action forbidden'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+
+        404:
+          description: 'resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
   /game/join/5e778462a7b11b0001612e8a:
     put:
@@ -964,6 +1138,70 @@ components:
       items:
         allOf:
           - $ref: '#/components/schemas/RoleObject'
+
+
+    GameInfoOk:
+      title: info about the game
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        playerRole:
+          $ref: '#/components/schemas/RoleObject'
+        location:
+          $ref: '#/components/schemas/LocationObject'
+        date:
+          type: string
+
+    ArrayOfGames:
+      type: array
+      items:
+        allOf:
+          - $ref: '#/components/schemas/GameObject'
+
+
+    GameObject:
+      title: Game Object
+      type: object
+      properties:
+        id:
+          type: string
+        host:
+          $ref: '#/components/schemas/UserObject'
+        gameTime:
+          type: string
+        location:
+          $ref: '#/components/schemas/LocationObject'
+        playersWithRoles:
+          type: object
+          properties:
+            player:
+              $ref: '#/components/schemas/RoleObject'
+
+    GameListResponseOk:
+      title: Created Game
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        existingGames:
+          $ref: '#/components/schemas/ArrayOfGames'
+
+
+    GameResponseOk:
+      title: Created Game
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        game:
+          $ref: '#/components/schemas/GameObject'
 
 
   securitySchemes:
