@@ -3,15 +3,12 @@ info:
   title: Project-X
   contact: {}
   version: '1.0'
-servers:
-  - url: http://localhost:9090
-    variables: {}
 paths:
   /oauth/token:
     post:
       tags:
         - User
-      summary: Get Token
+      summary: Get bearer token
       operationId: GetToken
       parameters:
         - name: Content-Type
@@ -37,40 +34,69 @@ paths:
                   example: password
                 username:
                   type: string
-                  example: admin
+                  example: username
                 password:
                   type: string
-                  example: adminadmin
-        required: false
+                  example: password
+        required: true
         x-send-file-in-body: false
       responses:
         200:
-          description: ''
+          description: 'Response with valid granted token'
           headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        400:
+          description: 'Invalid credentials'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
       deprecated: false
+      security: [{}]
   /user/create:
     post:
       tags:
         - User
       summary: Create user
       operationId: Createuser
-      parameters: []
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateuserRequest'
             example:
-              username: janko123
-              password: janko123
-              email: wadsars@janko.pl
+              username: string
+              password: string
+              email: string
         required: true
         x-send-file-in-body: false
       responses:
         200:
-          description: ''
+          description: 'user has been created'
           headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUserResponseOk'
+        400:
+          description: 'user already exists'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
+      security: [{}]
   /user/password:
     post:
       tags:
@@ -366,14 +392,17 @@ components:
       properties:
         username:
           type: string
+          description: 'min length: 5'
         password:
           type: string
+          description: 'min length: 8'
         email:
           type: string
+          description: 'valid email'
       example:
-        username: janko123
-        password: janko123
-        email: wadsars@janko.pl
+        username: string
+        password: string
+        email: string
     ChangepasswordRequest:
       title: ChangepasswordRequest
       required:
@@ -541,12 +570,85 @@ components:
         username: janko123
         password: janko123
         email: wadsars@janko.pl
+
+    TokenResponse:
+      title: Access token
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+        scope:
+          type: string
+        jti:
+          type: string
+
+    CreatedUserResponseOk:
+      title: Created user
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserObject'
+
+
+    UserObject:
+      title: User object
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        authority:
+          type: string
+        enabled:
+          type: boolean
+        signedDate:
+          type: string
+        lastLogged:
+          type: string
+
+    ErrorResponse:
+      title: Error response
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+
+    ErrorResponseOauth:
+      title: Error oauth response
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+
+
   securitySchemes:
-    httpBasic:
+    BearerAuth:            # arbitrary name for the security scheme
       type: http
-      scheme: basic
+      scheme: bearer
+      bearerFormat: JWT
+
+
 security:
-  - httpBasic: []
+  - BearerAuth: []
 tags:
   - name: User
   - name: Location
