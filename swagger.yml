@@ -362,6 +362,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ShortResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
         403:
           description: 'Forbidden action'
           content:
@@ -427,12 +433,36 @@ paths:
         required: true
         x-send-file-in-body: false
       responses:
-        201:
+        200:
           description: 'Location has been edited'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EditLocationResponseOk'
+        401:
+          description: 'Invalid token'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseOauth'
+        403:
+          description: 'Forbidden action'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: 'Resource has not been found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: 'Database error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       deprecated: false
   /game/create:
     post:
