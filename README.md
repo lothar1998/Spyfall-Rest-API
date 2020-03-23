@@ -51,3 +51,7 @@ To deploy a whole system use docker-compose:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Docs
+
+[Swagger docs](https://lothar1998.github.io/Spyfall-Rest-API/)
