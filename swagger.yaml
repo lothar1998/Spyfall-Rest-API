@@ -1,6 +1,7 @@
 openapi: 3.0.0
 info:
-  title: Project-X
+  title: Spyfall Rest API
+  description: "This is a docs for Spyfall Game Rest API implementation. Code can be found [here](https://github.com/lothar1998/Project-X). <br> <h2>Authors:</h2>  <b3> <a href='https://github.com/lothar1998' style='text-decoration: none;'>Piotr Kuglin</a><br><a href='https://github.com/kamkali' style='text-decoration: none;'>Kamil Kaliś</a>"
   contact: {}
   version: '1.0'
 paths:
@@ -1009,7 +1010,7 @@ paths:
 components:
   schemas:
     CreateuserRequest:
-      title: CreateuserRequest
+      title: Create user request
       required:
         - username
         - password
@@ -1030,7 +1031,7 @@ components:
         password: string
         email: string
     ChangepasswordRequest:
-      title: Change password
+      title: Change password request
       required:
         - oldPassword
         - newPassword
@@ -1045,7 +1046,7 @@ components:
         newPassword: string
 
     CreategameRequest:
-      title: CreategameRequest
+      title: Create game request
       required:
         - location
       type: object
@@ -1056,7 +1057,7 @@ components:
         location:
           id: 55e778446a7b11b0001612e89
     Location:
-      title: Location
+      title: Location id request
       required:
         - id
       type: object
@@ -1067,7 +1068,7 @@ components:
         id: 55e778446a7b11b0001612e89
 
     TokenResponse:
-      title: Access token
+      title: Access token response
       type: object
       properties:
         access_token:
@@ -1083,7 +1084,7 @@ components:
 
 
     ListedUsersResponseOk:
-      title: Created user
+      title: Listed users response
       type: object
       properties:
         type:
@@ -1094,7 +1095,7 @@ components:
           $ref: '#/components/schemas/ArrayOfUser'
 
     CreatedUserResponseOk:
-      title: Created user
+      title: Created user response
       type: object
       properties:
         type:
@@ -1125,6 +1126,7 @@ components:
           type: string
 
     ArrayOfUser:
+      title: List of users
       type: array
       items:
         allOf:
@@ -1153,7 +1155,7 @@ components:
           type: string
 
     ShortResponseOk:
-      title: Change ok
+      title: Short response
       type: object
       properties:
         type:
@@ -1162,6 +1164,7 @@ components:
           type: string
 
     ListLocationResponseOk:
+      title: Listed locations response
       properties:
         type:
           type: string
@@ -1172,6 +1175,7 @@ components:
 
 
     ArrayOfLocations:
+      title: List of locations
       type: array
       items:
         allOf:
@@ -1213,6 +1217,7 @@ components:
           type: string
 
     ArrayOfRoles:
+      title: List of roles
       type: array
       items:
         allOf:
@@ -1220,7 +1225,7 @@ components:
 
 
     GameInfoOk:
-      title: info about the game
+      title: Game info response
       type: object
       properties:
         type:
@@ -1235,6 +1240,7 @@ components:
           type: string
 
     ArrayOfGames:
+      title: List of games
       type: array
       items:
         allOf:
@@ -1260,7 +1266,7 @@ components:
               $ref: '#/components/schemas/RoleObject'
 
     GameListResponseOk:
-      title: Created Game
+      title: Listed games response
       type: object
       properties:
         type:
@@ -1272,7 +1278,7 @@ components:
 
 
     GameResponseOk:
-      title: Created Game
+      title: Created game response
       type: object
       properties:
         type:
@@ -1296,4 +1302,3 @@ tags:
   - name: User
   - name: Location
   - name: Game
-    description: Endpoint requests for game service
